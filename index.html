@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kartenspiel‑Bibliothek</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f2f5f9;
+            color: #0b1a2e;
+            padding: 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        #app {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+            padding: 1.8rem 2rem 2.5rem;
+            transition: all 0.1s;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem 1.5rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #edf2f7;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+        .logo small {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #5e6f8d;
+            letter-spacing: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
+        /* Buttons */
+        button {
+            background: #edf2f7;
+            border: none;
+            padding: 0.45rem 1.2rem;
+            border-radius: 3rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.05s;
+            color: #1a2a3a;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+        button:hover {
+            background: #dce3ec;
+        }
+        button:active {
+            transform: scale(0.96);
+        }
+        button.primary {
+            background: #1a2a3a;
+            color: white;
+        }
+        button.primary:hover {
+            background: #0e1a26;
+        }
+        button.success {
+            background: #0d7a4b;
+            color: white;
+        }
+        button.success:hover {
+            background: #0a5f3a;
+        }
+        button.danger {
+            background: #b22234;
+            color: white;
+        }
+        button.danger:hover {
+            background: #8f1a1c;
+        }
+        button.outline {
+            background: transparent;
+            border: 1.5px solid #cbd5e1;
+        }
+        button.outline:hover {
+            background: #f1f5f9;
+        }
+
+        /* Spielinfo */
+        .spiel-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem 2.5rem;
+            background: #f8fafc;
+            border-radius: 1.2rem;
+            padding: 0.8rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e9edf4;
+            align-items: baseline;
+        }
+        .spiel-info .label {
+            color: #5e6f8d;
+            font-weight: 500;
+            margin-right: 0.3rem;
+        }
+        .spiel-info .value {
+            font-weight: 500;
+        }
+
+        /* Tabelle */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 1.2rem;
+            border: 1px solid #e9edf4;
+            background: #ffffff;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 500px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #1a2a3a;
+            font-weight: 600;
+            padding: 0.7rem 0.8rem;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+        }
+        th:first-child {
+            padding-left: 1.2rem;
+        }
+        th:last-child {
+            padding-right: 1.2rem;
+        }
+
+        td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+        td:first-child {
+            padding-left: 1.2rem;
+        }
+        td:last-child {
+            padding-right: 1.2rem;
+        }
+
+        .row-total {
+            background: #f8fafc;
+            font-weight: 600;
+            border-top: 2px solid #d0d9e6;
+        }
+        .row-total td {
+            padding-top: 0.8rem;
+            padding-bottom: 0.8rem;
+        }
+
+        .punkte-pos {
+            color: #0d7a4b;
+        }
+        .punkte-neg {
+            color: #b22234;
+        }
+        .punkte-null {
+            color: #8a9bb0;
+        }
+
+        .runden-nr {
+            font-weight: 500;
+            color: #1a2a3a;
+        }
+        .datum-cell {
+            color: #5e6f8d;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        .total-cell {
+            font-weight: 600;
+        }
+
+        /* Formular neue Runde */
+        .runde-form {
+            background: #f8fafc;
+            border-radius: 1.2rem;
+            padding: 1.2rem 1.5rem;
+            border: 1px solid #e9edf4;
+            margin-bottom: 1.5rem;
+        }
+        .runde-form .form-title {
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+            font-size: 1rem;
+        }
+        .runde-form .inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem 1.2rem;
+            align-items: center;
+        }
+        .runde-form .input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: white;
+            padding: 0.1rem 0.4rem 0.1rem 0.8rem;
+            border-radius: 2.5rem;
+            border: 1.5px solid #e2e8f0;
+        }
+        .runde-form .input-group label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #1a2a3a;
+        }
+        .runde-form .input-group input {
+            border: none;
+            padding: 0.4rem 0.2rem 0.4rem 0;
+            width: 4.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-align: right;
+            background: transparent;
+            outline: none;
+        }
+        .runde-form .input-group input:focus {
+            border-color: #1a2a3a;
+        }
+        .runde-form .actions {
+            margin-top: 0.8rem;
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        /* Bibliothek */
+        .bibliothek-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .bibliothek-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            background: #f8fafc;
+            border-radius: 1rem;
+            border: 1px solid #e9edf4;
+            flex-wrap: wrap;
+            gap: 0.6rem 1.5rem;
+        }
+        .bibliothek-item .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem 1.5rem;
+            align-items: baseline;
+        }
+        .bibliothek-item .titel {
+            font-weight: 600;
+        }
+        .bibliothek-item .datum {
+            color: #5e6f8d;
+            font-size: 0.85rem;
+        }
+        .bibliothek-item .info {
+            color: #5e6f8d;
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #8a9bb0;
+            padding: 2.5rem 0;
+            font-style: italic;
+        }
+
+        /* Detailansicht (archiviert) */
+        .detail-back {
+            margin-bottom: 1.2rem;
+        }
+
+        /* Hilfsklassen */
+        .hidden {
+            display: none !important;
+        }
+        .flex {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .mt-1 {
+            margin-top: 1rem;
+        }
+        .mb-1 {
+            margin-bottom: 1rem;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .gap-1 {
+            gap: 0.5rem;
+        }
+        .w-full {
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 700px) {
+            #app {
+                padding: 1rem;
+            }
+            header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-actions {
+                justify-content: flex-start;
+            }
+            .runde-form .inputs {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .runde-form .input-group {
+                justify-content: space-between;
+            }
+            .runde-form .input-group input {
+                width: 5rem;
+            }
+            .spiel-info {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+            .bibliothek-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                🃏 Kartenspiel‑Bibliothek
+                <small>local</small>
+            </div>
+            <div class="header-actions" id="headerActions">
+                <!-- Dynamisch befüllt -->
+            </div>
+        </header>
+
+        <!-- Hauptbereich -->
+        <div id="mainArea">
+            <!-- Wird von JS gerendert -->
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        //  DATENMANAGEMENT (localStorage)
+        // ============================================================
+        const STORAGE_KEY = 'kartenspiel_bibliothek';
+        const AKTIV_KEY = 'kartenspiel_aktiv';
+
+        function ladeSpiele() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+        }
+
+        function speichereSpiele(spiele) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(spiele));
+        }
+
+        function ladeAktivesSpiel() {
+            try { return JSON.parse(localStorage.getItem(AKTIV_KEY)) || null; } catch { return null; }
+        }
+
+        function speichereAktivesSpiel(spiel) {
+            if (spiel) localStorage.setItem(AKTIV_KEY, JSON.stringify(spiel));
+            else localStorage.removeItem(AKTIV_KEY);
+        }
+
+        function generiereId() {
+            return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        }
+
+        function aktuellesDatum() {
+            return new Date().toISOString();
+        }
+
+        function formatDatum(iso) {
+            const d = new Date(iso);
+            return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit',
+                minute: '2-digit' });
+        }
+
+        // ============================================================
+        //  APP-STATE
+        // ============================================================
+        let aktuellesSpiel = ladeAktivesSpiel();
+        let anzeigeSpiel = null; // für archivierte Spielansicht
+
+        // ============================================================
+        //  RENDER-FUNKTIONEN
+        // ============================================================
+
+        const headerActions = document.getElementById('headerActions');
+        const mainArea = document.getElementById('mainArea');
+
+        function render() {
+            renderHeader();
+            renderMain();
+        }
+
+        function renderHeader() {
+            let html = '';
+            if (anzeigeSpiel) {
+                // Archiv-Detailansicht
+                html += `<button class="outline" id="btnDetailZurueck">← Zurück</button>`;
+            } else if (aktuellesSpiel) {
+                // Aktives Spiel
+                html += `<button class="primary" id="btnNeueRunde">➕ Runde</button>`;
+                html += `<button class="danger" id="btnSpielBeenden">⏹ Beenden</button>`;
+                html += `<button class="outline" id="btnBibliothek">📚 Bibliothek</button>`;
+            } else {
+                // Kein aktives Spiel
+                html += `<button class="primary" id="btnNeuesSpiel">➕ Neues Spiel</button>`;
+                html += `<button class="outline" id="btnBibliothek">📚 Bibliothek</button>`;
+            }
+            headerActions.innerHTML = html;
+
+            // Event-Listener anbinden
+            document.getElementById('btnNeuesSpiel')?.addEventListener('click', () => starteNeuesSpiel());
+            document.getElementById('btnNeueRunde')?.addEventListener('click', () => {
+                document.querySelector('.runde-form')?.scrollIntoView({ behavior: 'smooth' });
+            });
+            document.getElementById('btnSpielBeenden')?.addEventListener('click', () => beendeSpiel());
+            document.getElementById('btnBibliothek')?.addEventListener('click', () => zeigeBibliothek());
+            document.getElementById('btnDetailZurueck')?.addEventListener('click', () => {
+                anzeigeSpiel = null;
+                render();
+            });
+        }
+
+        function renderMain() {
+            if (anzeigeSpiel) {
+                renderDetailAnsicht(anzeigeSpiel);
+            } else if (aktuellesSpiel) {
+                renderSpielansicht();
+            } else {
+                renderBibliothek();
+            }
+        }
+
+        // ============================================================
+        //  SPIELANSICHT (aktiv)
+        // ============================================================
+        function renderSpielansicht() {
+            const s = aktuellesSpiel;
+            if (!s) return;
+
+            // Spielinfo
+            let html = `
+                <div class="spiel-info">
+                    <span><span class="label">Titel</span><span class="value">${s.titel || 'Unbenannt'}</span></span>
+                    <span><span class="label">Spieler</span><span class="value">${s.spieler.join(', ')}</span></span>
+                    <span><span class="label">Runden</span><span class="value">${s.runden.length}</span></span>
+                </div>
+            `;
+
+            // Tabelle
+            html += renderTabelle(s);
+
+            // Formular für neue Runde
+            html += `
+                <div class="runde-form" id="neueRundeForm">
+                    <div class="form-title">✏️ Neue Runde eintragen</div>
+                    <div class="inputs" id="rundeInputs">
+            `;
+            s.spieler.forEach(name => {
+                html += `
+                    <div class="input-group">
+                        <label>${name}</label>
+                        <input type="number" step="1" class="runde-input" data-name="${name}" value="0" />
+                    </div>
+                `;
+            });
+            html += `
+                    </div>
+                    <div class="actions">
+                        <button class="success" id="btnRundeSpeichern">✅ Runde speichern</button>
+                        <button class="outline" id="btnRundeReset">↺ Zurücksetzen</button>
+                    </div>
+                </div>
+            `;
+
+            mainArea.innerHTML = html;
+
+            // Event-Listener für Runde
+            document.getElementById('btnRundeSpeichern')?.addEventListener('click', () => {
+                speichereRunde();
+            });
+            document.getElementById('btnRundeReset')?.addEventListener('click', () => {
+                document.querySelectorAll('.runde-input').forEach(inp => inp.value = '0');
+            });
+            // Enter in Inputs
+            document.querySelectorAll('.runde-input').forEach(inp => {
+                inp.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.getElementById('btnRundeSpeichern')?.click();
+                    }
+                });
+            });
+        }
+
+        function renderTabelle(spiel) {
+            if (spiel.runden.length === 0) {
+                return `<div class="empty-state" style="padding:1.5rem;">Noch keine Runden gespielt.</div>`;
+            }
+
+            const spieler = spiel.spieler;
+            const totals = {};
+            spieler.forEach(n => totals[n] = 0);
+
+            let html = `<div class="table-wrap"><table>
+                <thead><tr>
+                    <th>#</th>
+                    <th>Datum</th>
+                    ${spieler.map(n => `<th>${n}</th>`).join('')}
+                    <th>Gesamt</th>
+                </tr></thead><tbody>
+            `;
+
+            spiel.runden.forEach((runde, idx) => {
+                const nr = idx + 1;
+                const dateStr = formatDatum(runde.zeitstempel || spiel.datum);
+                let rowHtml = `<tr>
+                    <td class="runden-nr">${nr}</td>
+                    <td class="datum-cell">${dateStr}</td>
+                `;
+                let gesamt = 0;
+                spieler.forEach(name => {
+                    const diff = runde.punkte[name] || 0;
+                    totals[name] += diff;
+                    const cls = diff > 0 ? 'punkte-pos' : (diff < 0 ? 'punkte-neg' : 'punkte-null');
+                    rowHtml += `<td class="${cls}">${diff > 0 ? '+':''}${diff}</td>`;
+                    gesamt += diff;
+                });
+                // Gesamt in dieser Runde (optional)
+                // rowHtml += `<td class="total-cell">${gesamt > 0 ? '+':''}${gesamt}</td>`;
+                // Besser: kumulierte Gesamtpunkte am Ende der Zeile
+                const totalSum = spieler.reduce((sum, name) => sum + totals[name], 0);
+                rowHtml += `<td class="total-cell">${totalSum}</td>`;
+                rowHtml += `</tr>`;
+                html += rowHtml;
+            });
+
+            // Zeile mit Gesamtpunktzahlen (kumuliert)
+            let totalRow = `<tr class="row-total"><td colspan="2">Gesamt</td>`;
+            spieler.forEach(name => {
+                totalRow += `<td class="total-cell">${totals[name]}</td>`;
+            });
+            const totalAll = spieler.reduce((sum, name) => sum + totals[name], 0);
+            totalRow += `<td class="total-cell">${totalAll}</td></tr>`;
+            html += totalRow;
+
+            html += `</tbody></table></div>`;
+            return html;
+        }
+
+        // ============================================================
+        //  RUNDE SPEICHERN
+        // ============================================================
+        function speichereRunde() {
+            if (!aktuellesSpiel) return;
+            const inputs = document.querySelectorAll('.runde-input');
+            const punkte = {};
+            let alleNull = true;
+            inputs.forEach(inp => {
+                const val = parseInt(inp.value);
+                if (!isNaN(val) && val !== 0) alleNull = false;
+                punkte[inp.dataset.name] = isNaN(val) ? 0 : val;
+            });
+            // Alle Spieler sicherstellen
+            aktuellesSpiel.spieler.forEach(name => {
+                if (!(name in punkte)) punkte[name] = 0;
+            });
+            if (alleNull) {
+                if (!confirm('Alle Werte sind 0. Trotzdem Runde speichern?')) return;
+            }
+            aktuellesSpiel.runden.push({
+                punkte: punkte,
+                zeitstempel: aktuellesDatum()
+            });
+            speichereAktivesSpiel(aktuellesSpiel);
+            render();
+        }
+
+        // ============================================================
+        //  NEUES SPIEL STARTEN
+        // ============================================================
+        function starteNeuesSpiel() {
+            const spielerNames = [];
+            // Einfacher Dialog: Eingabe von Spielernamen, kommagetrennt
+            const eingabe = prompt('Gib die Spielernamen ein, getrennt durch Komma (z.B. Anna, Bert, Clara):');
+            if (!eingabe) return;
+            const names = eingabe.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            if (names.length < 2) {
+                alert('Mindestens 2 Spieler benötigt.');
+                return;
+            }
+            const titel = prompt('Titel des Spiels (optional):') || formatDatum(aktuellesDatum());
+            const neuesSpiel = {
+                id: generiereId(),
+                titel: titel,
+                datum: aktuellesDatum(),
+                spieler: names,
+                runden: [],
+                erstelltAm: aktuellesDatum()
+            };
+            speichereAktivesSpiel(neuesSpiel);
+            aktuellesSpiel = neuesSpiel;
+            anzeigeSpiel = null;
+            render();
+        }
+
+        // ============================================================
+        //  SPIEL BEENDEN
+        // ============================================================
+        function beendeSpiel() {
+            if (!aktuellesSpiel) return;
+            if (aktuellesSpiel.runden.length === 0) {
+                if (!confirm('Das Spiel hat keine Runden. Trotzdem beenden?')) return;
+            }
+            const spieleListe = ladeSpiele();
+            spieleListe.push({ ...aktuellesSpiel });
+            speichereSpiele(spieleListe);
+            speichereAktivesSpiel(null);
+            aktuellesSpiel = null;
+            anzeigeSpiel = null;
+            render();
+        }
+
+        // ============================================================
+        //  BIBLIOTHEK
+        // ============================================================
+        function zeigeBibliothek() {
+            anzeigeSpiel = null;
+            // Falls aktives Spiel existiert, bleibt es erhalten, aber wir zeigen die Bibliothek
+            // Wenn kein aktives Spiel, zeigen wir Bibliothek.
+            render();
+        }
+
+        function renderBibliothek() {
+            const alle = ladeSpiele();
+            if (alle.length === 0) {
+                mainArea.innerHTML = `
+                    <div class="empty-state">
+                        <p style="font-size:1.2rem; margin-bottom:0.5rem;">📭 Noch keine Spiele gespeichert</p>
+                        <p style="font-size:0.95rem;">Starte ein neues Spiel, um deine ersten Runden zu erfassen.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sortieren nach Datum absteigend
+            const sortiert = [...alle].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+            let html = `<div class="bibliothek-list">`;
+            sortiert.forEach(s => {
+                html += `
+                    <div class="bibliothek-item">
+                        <div class="meta">
+                            <span class="titel">${s.titel || 'Unbenannt'}</span>
+                            <span class="datum">${formatDatum(s.datum)}</span>
+                            <span class="info">${s.spieler.length} Spieler · ${s.runden.length} Runden</span>
+                        </div>
+                        <button class="outline detail-btn" data-id="${s.id}">Details</button>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            mainArea.innerHTML = html;
+
+            document.querySelectorAll('.detail-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    const spiel = alle.find(s => s.id === id);
+                    if (spiel) {
+                        anzeigeSpiel = spiel;
+                        render();
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        //  DETAILANSICHT (archiviert)
+        // ============================================================
+        function renderDetailAnsicht(spiel) {
+            if (!spiel) return;
+            let html = `
+                <div class="spiel-info">
+                    <span><span class="label">Titel</span><span class="value">${spiel.titel || 'Unbenannt'}</span></span>
+                    <span><span class="label">Datum</span><span class="value">${formatDatum(spiel.datum)}</span></span>
+                    <span><span class="label">Spieler</span><span class="value">${spiel.spieler.join(', ')}</span></span>
+                    <span><span class="label">Runden</span><span class="value">${spiel.runden.length}</span></span>
+                </div>
+            `;
+            html += renderTabelle(spiel);
+            mainArea.innerHTML = html;
+        }
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        render();
+
+        // ============================================================
+        //  TASTATUR-KURZBEFEHL (optional)
+        // ============================================================
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (anzeigeSpiel) {
+                    anzeigeSpiel = null;
+                    render();
+                }
+            }
+        });
+
+        console.log('🃏 Kartenspiel-Bibliothek geladen.');
+    </script>
+</body>
+</html>
