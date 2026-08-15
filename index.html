@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Kartenspiel‑Bibliothek</title>
+    <link href="https://fonts.googleapis.com/css?family=Happy%20Monkey:700|Happy%20Monkey:400" rel="stylesheet" />
+    <style>
+        /* ----- Grundlagen – kein Scrollen ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Happy Monkey', cursive;
+            font-weight: 400;
+            background: #f5f0e8;
+            color: #2c1f14;
+        }
+
+        #app {
+            height: 100%;
+            overflow-y: auto;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            background: #fffcf8;
+            border-radius: 2.5rem;
+            box-shadow: 0 8px 30px rgba(44, 31, 20, 0.10);
+            padding: 1.5rem 1.2rem 2rem;
+            border: 2px solid #e6dacb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ----- Typografie (Happy Monkey) ----- */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Happy Monkey', cursive;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 3.366rem;
+        }
+        h2 {
+            font-size: 2.525rem;
+        }
+        h3 {
+            font-size: 1.894rem;
+        }
+        h4 {
+            font-size: 1.421rem;
+        }
+        h5 {
+            font-size: 1.066rem;
+        }
+        small {
+            font-size: 0.600rem;
+        }
+
+        /* ----- Header ----- */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 3px dashed #dccfc0;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c1f14;
+            letter-spacing: -0.5px;
+        }
+        .logo small {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: #7b6856;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        /* ----- Buttons (rund, verspielt) ----- */
+        button {
+            font-family: 'Happy Monkey', cursive;
+            background: #e6dacb;
+            border: 2px solid #cbb8a5;
+            padding: 0.6rem 1.4rem;
+            border-radius: 3rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.05s;
+            color: #2c1f14;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            touch-action: manipulation;
+            min-height: 48px;
+            justify-content: center;
+            box-shadow: 0 2px 0 #b8a28b;
+        }
+        button:active {
+            transform: scale(0.95);
+            box-shadow: 0 1px 0 #b8a28b;
+        }
+        button.primary {
+            background: #2c1f14;
+            border-color: #2c1f14;
+            color: #f5f0e8;
+            box-shadow: 0 2px 0 #1f140c;
+        }
+        button.primary:active {
+            box-shadow: 0 1px 0 #1f140c;
+        }
+        button.success {
+            background: #3b7a5a;
+            border-color: #2f6247;
+            color: white;
+            box-shadow: 0 2px 0 #2f6247;
+        }
+        button.success:active {
+            box-shadow: 0 1px 0 #2f6247;
+        }
+        button.danger {
+            background: #b85a4a;
+            border-color: #9e4536;
+            color: white;
+            box-shadow: 0 2px 0 #9e4536;
+        }
+        button.danger:active {
+            box-shadow: 0 1px 0 #9e4536;
+        }
+        button.outline {
+            background: transparent;
+            border: 2px solid #cbb8a5;
+            box-shadow: none;
+        }
+        button.outline:active {
+            box-shadow: none;
+            background: #f0e8dd;
+        }
+
+        /* ----- Spielinfo ----- */
+        .spiel-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem 1.2rem;
+            background: #f5efe8;
+            border-radius: 2rem;
+            padding: 0.7rem 1.2rem;
+            margin-bottom: 1.2rem;
+            border: 2px solid #e6dacb;
+            align-items: baseline;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+        .spiel-info .label {
+            color: #7b6856;
+            font-weight: 700;
+            margin-right: 0.2rem;
+        }
+        .spiel-info .value {
+            font-weight: 700;
+        }
+        .spiel-info .titel-klickbar {
+            cursor: pointer;
+            border-bottom: 2px dotted #cbb8a5;
+            padding-bottom: 0.1rem;
+        }
+        .spiel-info .titel-klickbar:hover {
+            background: #e6dacb;
+            border-radius: 0.3rem;
+        }
+
+        /* ----- Tabelle (scrollbar innerhalb) ----- */
+        .table-wrap {
+            overflow-x: auto;
+            overflow-y: auto;
+            border-radius: 1.8rem;
+            border: 2px solid #e6dacb;
+            background: #ffffff;
+            margin-bottom: 1.2rem;
+            -webkit-overflow-scrolling: touch;
+            flex: 1 1 auto;
+            max-height: 50vh;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 350px;
+        }
+
+        th {
+            background: #f5efe8;
+            color: #2c1f14;
+            font-weight: 700;
+            padding: 0.6rem 0.5rem;
+            text-align: left;
+            border-bottom: 3px solid #dccfc0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        th:first-child {
+            padding-left: 1rem;
+        }
+        th:last-child {
+            padding-right: 1rem;
+        }
+
+        td {
+            padding: 0.6rem 0.5rem;
+            border-bottom: 1px solid #ede5da;
+            vertical-align: middle;
+            text-align: center;
+        }
+        td:first-child {
+            padding-left: 1rem;
+            font-weight: 700;
+            text-align: left;
+        }
+        td:last-child {
+            padding-right: 1rem;
+        }
+
+        .runden-nr {
+            color: #2c1f14;
+        }
+        .datum-cell {
+            color: #7b6856;
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+
+        /* ----- Spieler-Buttons (unter der Tabelle) ----- */
+        .spieler-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin: 0.5rem 0 0.5rem;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .spieler-actions button {
+            flex: 0 1 auto;
+            min-width: 80px;
+            background: #f5efe8;
+            border-color: #dccfc0;
+            font-size: 0.95rem;
+            padding: 0.5rem 1.2rem;
+            box-shadow: 0 2px 0 #cbb8a5;
+        }
+        .spieler-actions button:active {
+            box-shadow: 0 1px 0 #cbb8a5;
+        }
+        .spieler-actions button .punkte-badge {
+            display: inline-block;
+            background: #2c1f14;
+            color: #f5f0e8;
+            border-radius: 2rem;
+            padding: 0 0.6rem;
+            font-size: 0.8rem;
+            margin-left: 0.4rem;
+            line-height: 1.6;
+        }
+
+        /* ----- Popup (Overlay) allgemein ----- */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 31, 20, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .popup-box {
+            background: #fffcf8;
+            border-radius: 2.5rem;
+            padding: 1.8rem 2rem 2rem;
+            max-width: 450px;
+            width: 92%;
+            border: 3px solid #dccfc0;
+            box-shadow: 0 12px 40px rgba(44, 31, 20, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .popup-box h3 {
+            text-align: center;
+            margin-bottom: 0.6rem;
+            color: #2c1f14;
+        }
+        .popup-box .sub {
+            text-align: center;
+            color: #7b6856;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .popup-input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .popup-input-area input {
+            font-family: 'Happy Monkey', cursive;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-align: center;
+            width: 100%;
+            padding: 0.4rem 0;
+            border: 3px solid #dccfc0;
+            border-radius: 2rem;
+            background: #f5efe8;
+            color: #2c1f14;
+            outline: none;
+            min-height: 70px;
+        }
+        .popup-input-area input:focus {
+            border-color: #2c1f14;
+            background: #fffcf8;
+        }
+        .popup-input-area input[readonly] {
+            background: #f5efe8;
+            cursor: default;
+            user-select: none;
+        }
+
+        .popup-tasten {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            width: 100%;
+            margin-top: 0.4rem;
+        }
+        .popup-tasten button {
+            font-family: 'Happy Monkey', cursive;
+            font-size: 1.8rem;
+            font-weight: 700;
+            padding: 0.6rem 0;
+            border-radius: 2rem;
+            background: #e6dacb;
+            border: 2px solid #cbb8a5;
+            color: #2c1f14;
+            min-height: 60px;
+            box-shadow: 0 2px 0 #b8a28b;
+            transition: 0.05s;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .popup-tasten button:active {
+            transform: scale(0.94);
+            box-shadow: 0 1px 0 #b8a28b;
+        }
+        .popup-tasten .op {
+            background: #dccfc0;
+            border-color: #b8a28b;
+        }
+        .popup-tasten .clear {
+            background: #f0d5c8;
+            border-color: #d8b8a5;
+        }
+        .popup-tasten .enter {
+            background: #3b7a5a;
+            border-color: #2f6247;
+            color: white;
+            box-shadow: 0 2px 0 #2f6247;
+        }
+        .popup-tasten .enter:active {
+            box-shadow: 0 1px 0 #2f6247;
+        }
+        .popup-tasten .cancel {
+            background: #dccfc0;
+            border-color: #b8a28b;
+        }
+
+        /* ----- Popup für Spielerliste und Spielerstellung ----- */
+        .popup-box .form-group {
+            margin-bottom: 1rem;
+        }
+        .popup-box .form-group label {
+            display: block;
+            font-weight: 700;
+            color: #2c1f14;
+            margin-bottom: 0.2rem;
+            font-size: 0.95rem;
+        }
+        .popup-box .form-group input {
+            font-family: 'Happy Monkey', cursive;
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 2px solid #dccfc0;
+            border-radius: 2rem;
+            font-size: 1rem;
+            background: #f5efe8;
+            color: #2c1f14;
+            outline: none;
+        }
+        .popup-box .form-group input:focus {
+            border-color: #2c1f14;
+            background: #fffcf8;
+        }
+        .popup-box .popup-actions {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+        }
+        .popup-box .popup-actions button {
+            flex: 1;
+            font-size: 1rem;
+            padding: 0.6rem 0;
+            min-height: 48px;
+        }
+
+        /* Spielerauswahl in Popups (Tags) */
+        .spieler-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.4rem 0;
+        }
+        .spieler-tag {
+            background: #e6dacb;
+            border: 2px solid #cbb8a5;
+            border-radius: 2rem;
+            padding: 0.2rem 0.8rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .spieler-tag .remove {
+            cursor: pointer;
+            font-weight: 700;
+            color: #7b6856;
+            font-size: 1.2rem;
+            line-height: 1;
+            margin-left: 0.2rem;
+        }
+        .spieler-tag .remove:hover {
+            color: #b85a4a;
+        }
+
+        .spieler-auswahl-liste {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .spieler-auswahl-liste button {
+            background: #f5efe8;
+            border: 2px solid #dccfc0;
+            border-radius: 2rem;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            box-shadow: none;
+            min-height: 36px;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .spieler-auswahl-liste button:active {
+            transform: scale(0.95);
+            background: #e6dacb;
+        }
+
+        /* ----- Bibliothek (klickbare Cards) ----- */
+        .bibliothek-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            flex: 1 1 auto;
+            overflow-y: auto;
+        }
+        .bibliothek-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            background: #f5efe8;
+            border-radius: 1.8rem;
+            border: 2px solid #e6dacb;
+            flex-wrap: wrap;
+            gap: 0.4rem 1rem;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .bibliothek-item:active {
+            background: #e6dacb;
+            transform: scale(0.98);
+        }
+        .bibliothek-item .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem 1rem;
+            align-items: baseline;
+            pointer-events: none;
+        }
+        .bibliothek-item .titel {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .bibliothek-item .datum {
+            color: #7b6856;
+            font-size: 0.8rem;
+        }
+        .bibliothek-item .info {
+            color: #7b6856;
+            font-size: 0.8rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #7b6856;
+            padding: 2rem 0;
+            font-style: italic;
+        }
+
+        /* ----- Hilfsklassen ----- */
+        .hidden {
+            display: none !important;
+        }
+        .mt-1 {
+            margin-top: 1rem;
+        }
+        .mb-1 {
+            margin-bottom: 1rem;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .flex {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 500px) {
+            #app {
+                padding: 0.8rem 0.6rem 1.5rem;
+                border-radius: 1.5rem;
+            }
+            .spiel-info {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.8rem;
+            }
+            table {
+                font-size: 0.7rem;
+                min-width: 300px;
+            }
+            th,
+            td {
+                padding: 0.3rem 0.2rem;
+            }
+            th:first-child,
+            td:first-child {
+                padding-left: 0.5rem;
+            }
+            th:last-child,
+            td:last-child {
+                padding-right: 0.5rem;
+            }
+            .spieler-actions button {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+                min-height: 40px;
+                flex: 1 0 auto;
+            }
+            .popup-box {
+                padding: 1.2rem 1rem 1.5rem;
+            }
+            .popup-input-area input {
+                font-size: 1.8rem;
+                min-height: 60px;
+            }
+            .popup-tasten button {
+                font-size: 1.5rem;
+                min-height: 50px;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .spieler-actions button {
+                flex: 1 0 45%;
+            }
+        }
+
+        /* ----- Farbverlauf für Zellen (wird dynamisch gesetzt) ----- */
+        .cell-score {
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <span>♠</span> Kartenspiel‑Bibliothek
+                <small>local</small>
+            </div>
+            <div class="header-actions" id="headerActions">
+                <!-- Dynamisch befüllt -->
+            </div>
+        </header>
+
+        <!-- Hauptbereich -->
+        <div id="mainArea" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+            <!-- Wird von JS gerendert -->
+        </div>
+
+    </div>
+
+    <script>
+        // ============================================================
+        //  DATENMANAGEMENT
+        // ============================================================
+        const STORAGE_KEY = 'kartenspiel_bibliothek';
+        const AKTIV_KEY = 'kartenspiel_aktiv';
+        const SPIELER_LISTE_KEY = 'kartenspiel_spielerliste';
+
+        function ladeSpiele() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+        }
+
+        function speichereSpiele(spiele) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(spiele));
+        }
+
+        function ladeAktivesSpiel() {
+            try { return JSON.parse(localStorage.getItem(AKTIV_KEY)) || null; } catch { return null; }
+        }
+
+        function speichereAktivesSpiel(spiel) {
+            if (spiel) localStorage.setItem(AKTIV_KEY, JSON.stringify(spiel));
+            else localStorage.removeItem(AKTIV_KEY);
+        }
+
+        function ladeSpielerListe() {
+            try { return JSON.parse(localStorage.getItem(SPIELER_LISTE_KEY)) || []; } catch { return []; }
+        }
+
+        function speichereSpielerListe(liste) {
+            localStorage.setItem(SPIELER_LISTE_KEY, JSON.stringify(liste));
+        }
+
+        function generiereId() {
+            return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        }
+
+        function aktuellesDatum() {
+            return new Date().toISOString();
+        }
+
+        function formatDatum(iso) {
+            const d = new Date(iso);
+            return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit',
+                minute: '2-digit' });
+        }
+
+        // ============================================================
+        //  APP-STATE
+        // ============================================================
+        let aktuellesSpiel = ladeAktivesSpiel();
+        let anzeigeSpiel = null; // für archivierte Spielansicht
+
+        // ============================================================
+        //  RENDER-FUNKTIONEN
+        // ============================================================
+
+        const headerActions = document.getElementById('headerActions');
+        const mainArea = document.getElementById('mainArea');
+
+        function render() {
+            renderHeader();
+            renderMain();
+        }
+
+        function renderHeader() {
+            let html = '';
+            if (anzeigeSpiel) {
+                // Detailansicht
+                html += `<button class="outline" id="btnDetailZurueck">← Zurück</button>`;
+                html += `<button class="success" id="btnDetailWiederAufnehmen">↻ Wieder aufnehmen</button>`;
+                html += `<button class="danger" id="btnDetailLoeschen">✕ Löschen</button>`;
+            } else if (aktuellesSpiel) {
+                html += `<button class="danger" id="btnSpielBeenden">✕ Beenden</button>`;
+                html += `<button class="outline" id="btnSpielerVerwalten">◈ Spieler</button>`;
+            } else {
+                html += `<button class="primary" id="btnNeuesSpiel">+ Neues Spiel</button>`;
+                html += `<button class="outline" id="btnSpielerVerwalten">◈ Spieler</button>`;
+            }
+            headerActions.innerHTML = html;
+
+            document.getElementById('btnNeuesSpiel')?.addEventListener('click', () => zeigeSpielErstellungPopup());
+            document.getElementById('btnSpielBeenden')?.addEventListener('click', () => beendeSpiel());
+            document.getElementById('btnSpielerVerwalten')?.addEventListener('click', () => zeigeSpielerVerwaltung());
+            document.getElementById('btnDetailZurueck')?.addEventListener('click', () => {
+                anzeigeSpiel = null;
+                render();
+            });
+            document.getElementById('btnDetailWiederAufnehmen')?.addEventListener('click', () => {
+                if (anzeigeSpiel) {
+                    spielWiederAufnehmen(anzeigeSpiel);
+                }
+            });
+            document.getElementById('btnDetailLoeschen')?.addEventListener('click', () => {
+                if (anzeigeSpiel) {
+                    spielLoeschen(anzeigeSpiel.id);
+                }
+            });
+        }
+
+        function renderMain() {
+            if (anzeigeSpiel) {
+                renderDetailAnsicht(anzeigeSpiel);
+            } else if (aktuellesSpiel) {
+                renderSpielansicht();
+            } else {
+                renderBibliothek();
+            }
+        }
+
+        // ============================================================
+        //  SPIELER-VERWALTUNG (Overlay)
+        // ============================================================
+        function zeigeSpielerVerwaltung() {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.id = 'spielerVerwaltungOverlay';
+
+            const spieler = ladeSpielerListe();
+
+            let tagsHtml = spieler.map(name =>
+                `<span class="spieler-tag">${name} <span class="remove" data-name="${name}">×</span></span>`
+            ).join('');
+
+            overlay.innerHTML = `
+                <div class="popup-box">
+                    <h3>Spieler verwalten</h3>
+                    <div class="sub">Hier kannst du Spieler hinzufügen oder entfernen.</div>
+                    <div class="form-group">
+                        <label>Neuer Spieler</label>
+                        <div style="display:flex; gap:0.4rem;">
+                            <input type="text" id="neuerSpielerInput" placeholder="Name" />
+                            <button class="success" id="spielerHinzufuegenBtn" style="flex-shrink:0;">+</button>
+                        </div>
+                    </div>
+                    <div class="spieler-tags" id="spielerTagsContainer">
+                        ${tagsHtml || '<span style="color:#7b6856;">Noch keine Spieler.</span>'}
+                    </div>
+                    <div class="popup-actions">
+                        <button class="cancel" id="spielerVerwaltungSchliessen">Schließen</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            // Event: hinzufügen
+            const input = document.getElementById('neuerSpielerInput');
+            document.getElementById('spielerHinzufuegenBtn').addEventListener('click', () => {
+                const name = input.value.trim();
+                if (name && !spieler.includes(name)) {
+                    spieler.push(name);
+                    speichereSpielerListe(spieler);
+                    aktualisiereSpielerTags(overlay);
+                    input.value = '';
+                } else if (spieler.includes(name)) {
+                    alert('Spieler existiert bereits.');
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('spielerHinzufuegenBtn').click();
+                }
+            });
+
+            // Event: entfernen (delegation)
+            overlay.querySelector('#spielerTagsContainer').addEventListener('click', (e) => {
+                const remove = e.target.closest('.remove');
+                if (remove) {
+                    const name = remove.dataset.name;
+                    const idx = spieler.indexOf(name);
+                    if (idx !== -1) {
+                        spieler.splice(idx, 1);
+                        speichereSpielerListe(spieler);
+                        aktualisiereSpielerTags(overlay);
+                    }
+                }
+            });
+
+            document.getElementById('spielerVerwaltungSchliessen').addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.remove();
+            });
+        }
+
+        function aktualisiereSpielerTags(overlay) {
+            const container = overlay.querySelector('#spielerTagsContainer');
+            const spieler = ladeSpielerListe();
+            if (spieler.length === 0) {
+                container.innerHTML = '<span style="color:#7b6856;">Noch keine Spieler.</span>';
+            } else {
+                container.innerHTML = spieler.map(name =>
+                    `<span class="spieler-tag">${name} <span class="remove" data-name="${name}">×</span></span>`
+                ).join('');
+            }
+        }
+
+        // ============================================================
+        //  SPIELERSTELLUNG (Popup)
+        // ============================================================
+        function zeigeSpielErstellungPopup() {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.id = 'spielErstellungOverlay';
+
+            const alleSpieler = ladeSpielerListe();
+            let ausgewaehlte = [];
+
+            function renderPopup() {
+                const auswahlHtml = alleSpieler.map(name =>
+                    `<button class="spieler-auswahl-btn" data-name="${name}">${name}</button>`
+                ).join('');
+
+                const tagsHtml = ausgewaehlte.map(name =>
+                    `<span class="spieler-tag">${name} <span class="remove" data-name="${name}">×</span></span>`
+                ).join('');
+
+                overlay.innerHTML = `
+                    <div class="popup-box">
+                        <h3>✏️ Neues Spiel</h3>
+                        <div class="sub">Wähle Spieler aus (mindestens 2).</div>
+                        <div class="form-group">
+                            <label>Ausgewählte Spieler</label>
+                            <div class="spieler-tags" id="ausgewaehlteTags">${tagsHtml || '<span style="color:#7b6856;">Keine ausgewählt.</span>'}</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Alle Spieler (klicken zum Hinzufügen)</label>
+                            <div class="spieler-auswahl-liste" id="spielerAuswahlListe">${auswahlHtml}</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Neuen Spieler erstellen</label>
+                            <div style="display:flex; gap:0.4rem;">
+                                <input type="text" id="neuerSpielerErstellen" placeholder="Name" />
+                                <button class="success" id="neuSpielerErstellenBtn" style="flex-shrink:0;">+</button>
+                            </div>
+                        </div>
+                        <div class="popup-actions">
+                            <button class="cancel" id="neuAbbrechen">Abbrechen</button>
+                            <button class="success" id="neuErstellen" ${ausgewaehlte.length < 2 ? 'disabled' : ''}>Erstellen</button>
+                        </div>
+                    </div>
+                `;
+
+                // Event: Spieler aus Liste hinzufügen
+                overlay.querySelectorAll('.spieler-auswahl-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const name = btn.dataset.name;
+                        if (!ausgewaehlte.includes(name)) {
+                            ausgewaehlte.push(name);
+                            renderPopup();
+                        }
+                    });
+                });
+
+                // Event: Tag entfernen
+                overlay.querySelector('#ausgewaehlteTags')?.addEventListener('click', (e) => {
+                    const remove = e.target.closest('.remove');
+                    if (remove) {
+                        const name = remove.dataset.name;
+                        const idx = ausgewaehlte.indexOf(name);
+                        if (idx !== -1) {
+                            ausgewaehlte.splice(idx, 1);
+                            renderPopup();
+                        }
+                    }
+                });
+
+                // Neuen Spieler erstellen
+                const newInput = document.getElementById('neuerSpielerErstellen');
+                document.getElementById('neuSpielerErstellenBtn').addEventListener('click', () => {
+                    const name = newInput.value.trim();
+                    if (name && !alleSpieler.includes(name)) {
+                        alleSpieler.push(name);
+                        speichereSpielerListe(alleSpieler);
+                        if (!ausgewaehlte.includes(name)) {
+                            ausgewaehlte.push(name);
+                        }
+                        newInput.value = '';
+                        renderPopup();
+                    } else if (alleSpieler.includes(name)) {
+                        alert('Spieler existiert bereits.');
+                    }
+                });
+                newInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.getElementById('neuSpielerErstellenBtn').click();
+                    }
+                });
+
+                // Erstellen-Button
+                document.getElementById('neuErstellen').addEventListener('click', () => {
+                    if (ausgewaehlte.length < 2) {
+                        alert('Mindestens 2 Spieler.');
+                        return;
+                    }
+                    const titel = formatDatum(aktuellesDatum()); // automatisch Datum+Uhrzeit
+                    const neuesSpiel = {
+                        id: generiereId(),
+                        titel: titel,
+                        datum: aktuellesDatum(),
+                        spieler: [...ausgewaehlte],
+                        runden: [],
+                        erstelltAm: aktuellesDatum()
+                    };
+                    speichereAktivesSpiel(neuesSpiel);
+                    aktuellesSpiel = neuesSpiel;
+                    anzeigeSpiel = null;
+                    overlay.remove();
+                    render();
+                });
+
+                document.getElementById('neuAbbrechen').addEventListener('click', () => overlay.remove());
+                // Erstellen-Button aktivieren/deaktivieren
+                document.getElementById('neuErstellen').disabled = (ausgewaehlte.length < 2);
+            }
+
+            renderPopup();
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.remove();
+            });
+        }
+
+        // ============================================================
+        //  SPIELANSICHT (aktiv)
+        // ============================================================
+        function renderSpielansicht() {
+            const s = aktuellesSpiel;
+            if (!s) return;
+
+            let html = `
+                <div class="spiel-info">
+                    <span><span class="label">Titel</span>
+                        <span class="value titel-klickbar" id="titelKlickbar">${s.titel || 'Unbenannt'}</span>
+                    </span>
+                    <span><span class="label">Spieler</span><span class="value">${s.spieler.join(', ')}</span></span>
+                    <span><span class="label">Runden</span><span class="value">${s.runden.length}</span></span>
+                </div>
+            `;
+
+            html += renderTabelle(s);
+
+            const totals = berechneTotals(s);
+            html += `<div class="spieler-actions" id="spielerActions">`;
+            s.spieler.forEach(name => {
+                const punkte = totals[name] || 0;
+                html += `
+                    <button class="spieler-btn" data-name="${name}">
+                        ${name} <span class="punkte-badge">${punkte}</span>
+                    </button>
+                `;
+            });
+            html += `</div>`;
+
+            mainArea.innerHTML = html;
+
+            // Titel klickbar
+            document.getElementById('titelKlickbar')?.addEventListener('click', () => {
+                zeigeTitelBearbeitenPopup(s);
+            });
+
+            // Spieler-Buttons
+            document.querySelectorAll('.spieler-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const name = btn.dataset.name;
+                    oeffnePunktePopup(name);
+                });
+            });
+        }
+
+        // ============================================================
+        //  TITEL BEARBEITEN (Popup)
+        // ============================================================
+        function zeigeTitelBearbeitenPopup(spiel) {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.innerHTML = `
+                <div class="popup-box">
+                    <h3>Titel bearbeiten</h3>
+                    <div class="form-group">
+                        <input type="text" id="titelEditInput" value="${spiel.titel || ''}" placeholder="Titel eingeben" />
+                    </div>
+                    <div class="popup-actions">
+                        <button class="cancel" id="titelEditAbbrechen">Abbrechen</button>
+                        <button class="success" id="titelEditSpeichern">Speichern</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            const input = document.getElementById('titelEditInput');
+            input.focus();
+            input.select();
+
+            document.getElementById('titelEditAbbrechen').addEventListener('click', () => overlay.remove());
+            document.getElementById('titelEditSpeichern').addEventListener('click', () => {
+                const neu = input.value.trim() || formatDatum(aktuellesDatum());
+                spiel.titel = neu;
+                speichereAktivesSpiel(spiel);
+                overlay.remove();
+                render();
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('titelEditSpeichern').click();
+                }
+            });
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.remove();
+            });
+        }
+
+        // ============================================================
+        //  TABELLE (unverändert)
+        // ============================================================
+        function renderTabelle(spiel) {
+            if (spiel.runden.length === 0) {
+                return `<div class="empty-state" style="padding:1.5rem;">Noch keine Runden gespielt.</div>`;
+            }
+
+            const spieler = spiel.spieler;
+            let html = `<div class="table-wrap"><table>
+                <thead><tr>
+                    <th>#</th>
+                    <th>Datum</th>
+                    ${spieler.map(n => `<th>${n}</th>`).join('')}
+                </tr></thead><tbody>
+            `;
+
+            spiel.runden.forEach((runde, idx) => {
+                const nr = idx + 1;
+                const dateStr = formatDatum(runde.zeitstempel || spiel.datum);
+                const values = spieler.map(name => runde.punkte[name] !== undefined ? runde.punkte[name] : null);
+                const vorhanden = values.filter(v => v !== null);
+                let min = 0,
+                    max = 0,
+                    range = 0;
+                if (vorhanden.length > 0) {
+                    min = Math.min(...vorhanden);
+                    max = Math.max(...vorhanden);
+                    range = max - min;
+                }
+
+                let rowHtml = `<tr>
+                    <td class="runden-nr">${nr}</td>
+                    <td class="datum-cell">${dateStr}</td>
+                `;
+
+                spieler.forEach((name, i) => {
+                    const val = values[i];
+                    let bgColor = '#ffffff';
+                    let displayVal = '-';
+                    if (val !== null) {
+                        displayVal = val > 0 ? '+' + val : String(val);
+                        if (range !== 0) {
+                            const ratio = (val - min) / range;
+                            const hue = ratio * 120;
+                            bgColor = `hsl(${hue}, 65%, 72%)`;
+                        } else {
+                            bgColor = '#f0ece6';
+                        }
+                    } else {
+                        bgColor = '#f8f6f2';
+                    }
+                    rowHtml += `<td style="background-color: ${bgColor}; font-weight: 700;">${displayVal}</td>`;
+                });
+
+                rowHtml += `</tr>`;
+                html += rowHtml;
+            });
+
+            html += `</tbody></table></div>`;
+            return html;
+        }
+
+        function berechneTotals(spiel) {
+            const totals = {};
+            spiel.spieler.forEach(n => totals[n] = 0);
+            spiel.runden.forEach(runde => {
+                spiel.spieler.forEach(n => {
+                    const v = runde.punkte[n];
+                    if (v !== undefined) totals[n] += v;
+                });
+            });
+            return totals;
+        }
+
+        // ============================================================
+        //  PUNKTE-POPUP (Custom-Tastatur) – unverändert
+        // ============================================================
+        function oeffnePunktePopup(spielerName) {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.id = 'popupOverlay';
+
+            overlay.innerHTML = `
+                <div class="popup-box">
+                    <h3>${spielerName}</h3>
+                    <div class="sub">Punkte für diese Runde</div>
+                    <div class="popup-input-area">
+                        <input type="text" id="popupInput" readonly placeholder="0" />
+                        <div class="popup-tasten">
+                            <button class="op" data-action="7">7</button>
+                            <button class="op" data-action="8">8</button>
+                            <button class="op" data-action="9">9</button>
+                            <button class="op" data-action="4">4</button>
+                            <button class="op" data-action="5">5</button>
+                            <button class="op" data-action="6">6</button>
+                            <button class="op" data-action="1">1</button>
+                            <button class="op" data-action="2">2</button>
+                            <button class="op" data-action="3">3</button>
+                            <button class="op" data-action="+">+</button>
+                            <button class="op" data-action="0">0</button>
+                            <button class="op" data-action="-">−</button>
+                            <button class="clear" data-action="clear">⌫</button>
+                            <button class="cancel" data-action="cancel">Abbr</button>
+                            <button class="enter" data-action="enter">✓</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            const input = document.getElementById('popupInput');
+            input.focus();
+
+            overlay.querySelectorAll('.popup-tasten button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const action = btn.dataset.action;
+                    handlePunktePopupAction(action, input, spielerName, overlay);
+                });
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    popupPunkteBestätigen(input, spielerName, overlay);
+                }
+                if (e.key === 'Escape') {
+                    overlay.remove();
+                }
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.remove();
+            });
+        }
+
+        function handlePunktePopupAction(action, input, spielerName, overlay) {
+            if (action === 'clear') {
+                input.value = input.value.slice(0, -1);
+            } else if (action === 'cancel') {
+                overlay.remove();
+            } else if (action === 'enter') {
+                popupPunkteBestätigen(input, spielerName, overlay);
+            } else {
+                const last = input.value.slice(-1);
+                if (['+', '-'].includes(action)) {
+                    if (['+', '-'].includes(last)) {
+                        input.value = input.value.slice(0, -1) + action;
+                    } else {
+                        input.value += action;
+                    }
+                } else {
+                    input.value += action;
+                }
+            }
+            input.focus();
+        }
+
+        function popupPunkteBestätigen(input, spielerName, overlay) {
+            let wert = input.value.trim();
+            if (wert === '') wert = '0';
+            const num = parseInt(wert);
+            if (isNaN(num)) {
+                alert('Bitte eine gültige Zahl eingeben.');
+                return;
+            }
+            if (aktuellesSpiel) {
+                // Anzahl bisheriger Einträge für diesen Spieler ermitteln
+                const anzahl = aktuellesSpiel.runden.filter(r => r.punkte[spielerName] !== undefined).length;
+                const rundenIndex = anzahl;
+
+                if (rundenIndex < aktuellesSpiel.runden.length) {
+                    aktuellesSpiel.runden[rundenIndex].punkte[spielerName] = num;
+                } else {
+                    const neueRunde = {
+                        punkte: {},
+                        zeitstempel: aktuellesDatum()
+                    };
+                    neueRunde.punkte[spielerName] = num;
+                    aktuellesSpiel.runden.push(neueRunde);
+                }
+                speichereAktivesSpiel(aktuellesSpiel);
+                overlay.remove();
+                render();
+            } else {
+                overlay.remove();
+            }
+        }
+
+        // ============================================================
+        //  SPIEL BEENDEN
+        // ============================================================
+        function beendeSpiel() {
+            if (!aktuellesSpiel) return;
+            if (aktuellesSpiel.runden.length === 0) {
+                if (!confirm('Keine Runden. Trotzdem beenden?')) return;
+            }
+            const spieleListe = ladeSpiele();
+            spieleListe.push({ ...aktuellesSpiel });
+            speichereSpiele(spieleListe);
+            speichereAktivesSpiel(null);
+            aktuellesSpiel = null;
+            anzeigeSpiel = null;
+            render();
+        }
+
+        // ============================================================
+        //  BIBLIOTHEK (klickbare Einträge)
+        // ============================================================
+        function renderBibliothek() {
+            const alle = ladeSpiele();
+            if (alle.length === 0) {
+                mainArea.innerHTML = `
+                    <div class="empty-state" style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+                        <p style="font-size:1.2rem; margin-bottom:0.5rem;">◈ Keine Spiele gespeichert</p>
+                        <p style="font-size:0.95rem;">Starte ein neues Spiel, um deine ersten Runden zu erfassen.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const sortiert = [...alle].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+            let html = `<div class="bibliothek-list">`;
+            sortiert.forEach(s => {
+                html += `
+                    <div class="bibliothek-item" data-id="${s.id}">
+                        <div class="meta">
+                            <span class="titel">${s.titel || 'Unbenannt'}</span>
+                            <span class="datum">${formatDatum(s.datum)}</span>
+                            <span class="info">${s.spieler.length} Spieler · ${s.runden.length} Runden</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            mainArea.innerHTML = html;
+
+            // Klick auf gesamte Card
+            document.querySelectorAll('.bibliothek-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    const id = el.dataset.id;
+                    const spiel = alle.find(s => s.id === id);
+                    if (spiel) {
+                        anzeigeSpiel = spiel;
+                        render();
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        //  DETAILANSICHT (archiviert)
+        // ============================================================
+        function renderDetailAnsicht(spiel) {
+            if (!spiel) return;
+            let html = `
+                <div class="spiel-info">
+                    <span><span class="label">Titel</span><span class="value">${spiel.titel || 'Unbenannt'}</span></span>
+                    <span><span class="label">Datum</span><span class="value">${formatDatum(spiel.datum)}</span></span>
+                    <span><span class="label">Spieler</span><span class="value">${spiel.spieler.join(', ')}</span></span>
+                    <span><span class="label">Runden</span><span class="value">${spiel.runden.length}</span></span>
+                </div>
+            `;
+            html += renderTabelle(spiel);
+            mainArea.innerHTML = html;
+        }
+
+        // ============================================================
+        //  WIEDER AUFNEHMEN & LÖSCHEN (aus Detailansicht)
+        // ============================================================
+        function spielWiederAufnehmen(spiel) {
+            // Kopie des Spiels als aktuelles Spiel setzen
+            const kopie = {
+                ...spiel,
+                id: generiereId(), // neue ID, damit es nicht mit dem archivierten kollidiert
+                runden: spiel.runden.map(r => ({ ...r, punkte: { ...r.punkte } }))
+            };
+            speichereAktivesSpiel(kopie);
+            aktuellesSpiel = kopie;
+            anzeigeSpiel = null;
+            render();
+        }
+
+        function spielLoeschen(id) {
+            if (!confirm('Spiel wirklich löschen?')) return;
+            let spiele = ladeSpiele();
+            spiele = spiele.filter(s => s.id !== id);
+            speichereSpiele(spiele);
+            anzeigeSpiel = null;
+            render();
+        }
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        render();
+
+        console.log('♠ Kartenspiel-Bibliothek (App-Modus) geladen.');
+    </script>
+</body>
+</html>
