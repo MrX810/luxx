@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Kartenspiel‑Bibliothek</title>
+    <link href="https://fonts.googleapis.com/css?family=Happy%20Monkey:700|Happy%20Monkey:400" rel="stylesheet" />
+    <style>
+        /* ----- Grundlagen – kein Scrollen ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Happy Monkey', cursive;
+            font-weight: 400;
+            background: #f5f0e8;
+            color: #2c1f14;
+        }
+
+        #app {
+            height: 100%;
+            overflow-y: auto;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            background: #fffcf8;
+            border-radius: 2.5rem;
+            box-shadow: 0 8px 30px rgba(44, 31, 20, 0.10);
+            padding: 1.5rem 1.2rem 2rem;
+            border: 2px solid #e6dacb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ----- Typografie (Happy Monkey) ----- */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Happy Monkey', cursive;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 3.366rem;
+        }
+        h2 {
+            font-size: 2.525rem;
+        }
+        h3 {
+            font-size: 1.894rem;
+        }
+        h4 {
+            font-size: 1.421rem;
+        }
+        h5 {
+            font-size: 1.066rem;
+        }
+        small {
+            font-size: 0.600rem;
+        }
+
+        /* ----- Header ----- */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 3px dashed #dccfc0;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c1f14;
+            letter-spacing: -0.5px;
+            cursor: pointer;
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+        }
+        .header-actions .right {
+            margin-left: auto;
+        }
+
+        /* ----- Buttons (rund, verspielt) ----- */
+        button {
+            font-family: 'Happy Monkey', cursive;
+            background: #e6dacb;
+            border: 2px solid #cbb8a5;
+            padding: 0.6rem 1.4rem;
+            border-radius: 3rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.05s;
+            color: #2c1f14;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            touch-action: manipulation;
+            min-height: 48px;
+            justify-content: center;
+            box-shadow: 0 2px 0 #b8a28b;
+            flex-shrink: 0;
+        }
+        button:active {
+            transform: scale(0.95);
+            box-shadow: 0 1px 0 #b8a28b;
+        }
+        button.primary {
+            background: #2c1f14;
+            border-color: #2c1f14;
+            color: #f5f0e8;
+            box-shadow: 0 2px 0 #1f140c;
+        }
+        button.primary:active {
+            box-shadow: 0 1px 0 #1f140c;
+        }
+        button.success {
+            background: #3b7a5a;
+            border-color: #2f6247;
+            color: white;
+            box-shadow: 0 2px 0 #2f6247;
+        }
+        button.success:active {
+            box-shadow: 0 1px 0 #2f6247;
+        }
+        button.danger {
+            background: #b85a4a;
+            border-color: #9e4536;
+            color: white;
+            box-shadow: 0 2px 0 #9e4536;
+        }
+        button.danger:active {
+            box-shadow: 0 1px 0 #9e4536;
+        }
+        button.outline {
+            background: transparent;
+            border: 2px solid #cbb8a5;
+            box-shadow: none;
+        }
+        button.outline:active {
+            box-shadow: none;
+            background: #f0e8dd;
+        }
+        button.icon {
+            padding: 0.6rem;
+            min-width: 48px;
+            font-size: 1.6rem;
+            font-family: 'Segoe UI Symbol', 'Arial Unicode MS', Arial, sans-serif;
+            line-height: 1;
+        }
+
+        /* ----- Spielinfo ----- */
+        .spiel-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem 1.2rem;
+            background: #f5efe8;
+            border-radius: 2rem;
+            padding: 0.7rem 1.2rem;
+            margin-bottom: 1.2rem;
+            border: 2px solid #e6dacb;
+            align-items: baseline;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+        .spiel-info .label {
+            color: #7b6856;
+            font-weight: 700;
+            margin-right: 0.2rem;
+        }
+        .spiel-info .value {
+            font-weight: 700;
+        }
+        .spiel-info .value.titel-edit {
+            cursor: pointer;
+            border-bottom: 3px dotted #2c1f14;
+            padding-bottom: 0.1rem;
+        }
+
+        /* ----- Tabelle (scrollbar innerhalb) ----- */
+        .table-wrap {
+            overflow-x: auto;
+            overflow-y: auto;
+            border-radius: 1.8rem;
+            border: 2px solid #e6dacb;
+            background: #ffffff;
+            margin-bottom: 1.2rem;
+            -webkit-overflow-scrolling: touch;
+            flex: 1 1 auto;
+            max-height: 50vh;
+            scroll-behavior: smooth;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 350px;
+        }
+
+        th {
+            background: #f5efe8;
+            color: #2c1f14;
+            font-weight: 700;
+            padding: 0.6rem 0.5rem;
+            text-align: left;
+            border-bottom: 3px solid #dccfc0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        th:first-child {
+            padding-left: 1rem;
+        }
+        th:last-child {
+            padding-right: 1rem;
+        }
+
+        td {
+            padding: 0.6rem 0.5rem;
+            border-bottom: 1px solid #ede5da;
+            vertical-align: middle;
+            text-align: center;
+        }
+        td:first-child {
+            padding-left: 1rem;
+            font-weight: 700;
+            text-align: left;
+        }
+        td:last-child {
+            padding-right: 1rem;
+        }
+
+        .runden-nr {
+            color: #2c1f14;
+        }
+        .datum-cell {
+            color: #7b6856;
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+
+        .average-row td,
+        .total-row td {
+            background: #f5efe8;
+            font-weight: 700;
+            border-top: 2px solid #dccfc0;
+            border-bottom: 2px solid #dccfc0;
+        }
+
+        /* ----- Spieler-Buttons (unter der Tabelle) ----- */
+        .spieler-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin: 0.5rem 0 0.5rem;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .spieler-actions button {
+            flex: 0 1 auto;
+            min-width: 80px;
+            background: #f5efe8;
+            border-color: #dccfc0;
+            font-size: 0.95rem;
+            padding: 0.5rem 1.2rem;
+            box-shadow: 0 2px 0 #cbb8a5;
+            transition: background 0.2s;
+        }
+        .spieler-actions button:active {
+            box-shadow: 0 1px 0 #cbb8a5;
+        }
+        .spieler-actions button .punkte-badge {
+            display: inline-block;
+            background: #2c1f14;
+            color: #f5f0e8;
+            border-radius: 2rem;
+            padding: 0 0.6rem;
+            font-size: 0.8rem;
+            margin-left: 0.4rem;
+            line-height: 1.6;
+            transition: background 0.2s;
+        }
+
+        /* ----- Popup (Overlay) für Punkteingabe ----- */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 31, 20, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .popup-box {
+            background: #fffcf8;
+            border-radius: 2.5rem;
+            padding: 1.8rem 2rem 2rem;
+            max-width: 450px;
+            width: 90%;
+            border: 3px solid #dccfc0;
+            box-shadow: 0 12px 40px rgba(44, 31, 20, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .popup-box h3 {
+            text-align: center;
+            margin-bottom: 0.6rem;
+            color: #2c1f14;
+        }
+        .popup-box .sub {
+            text-align: center;
+            color: #7b6856;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .popup-input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .popup-input-area input {
+            font-family: 'Happy Monkey', cursive;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-align: center;
+            width: 100%;
+            padding: 0.4rem 0;
+            border: 3px solid #dccfc0;
+            border-radius: 2rem;
+            background: #f5efe8;
+            color: #2c1f14;
+            outline: none;
+            min-height: 70px;
+        }
+        .popup-input-area input:focus {
+            border-color: #2c1f14;
+            background: #fffcf8;
+        }
+        .popup-input-area input[readonly] {
+            background: #f5efe8;
+            cursor: default;
+            user-select: none;
+        }
+
+        .popup-tasten {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            width: 100%;
+            margin-top: 0.4rem;
+        }
+        .popup-tasten button {
+            font-family: 'Happy Monkey', cursive;
+            font-size: 1.8rem;
+            font-weight: 700;
+            padding: 0.6rem 0;
+            border-radius: 2rem;
+            background: #e6dacb;
+            border: 2px solid #cbb8a5;
+            color: #2c1f14;
+            min-height: 60px;
+            box-shadow: 0 2px 0 #b8a28b;
+            transition: 0.05s;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .popup-tasten button:active {
+            transform: scale(0.94);
+            box-shadow: 0 1px 0 #b8a28b;
+        }
+        .popup-tasten .op {
+            background: #dccfc0;
+            border-color: #b8a28b;
+        }
+        .popup-tasten .clear {
+            background: #f0d5c8;
+            border-color: #d8b8a5;
+        }
+        .popup-tasten .enter {
+            background: #3b7a5a;
+            border-color: #2f6247;
+            color: white;
+            box-shadow: 0 2px 0 #2f6247;
+        }
+        .popup-tasten .enter:active {
+            box-shadow: 0 1px 0 #2f6247;
+        }
+        .popup-tasten .cancel {
+            background: #dccfc0;
+            border-color: #b8a28b;
+        }
+
+        /* ----- Popup für Spielerstellung (mit OS-Tastatur) ----- */
+        .popup-box .form-group {
+            margin-bottom: 1rem;
+        }
+        .popup-box .form-group label {
+            display: block;
+            font-weight: 700;
+            color: #2c1f14;
+            margin-bottom: 0.2rem;
+            font-size: 0.95rem;
+        }
+        .popup-box .form-group input {
+            font-family: 'Happy Monkey', cursive;
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 2px solid #dccfc0;
+            border-radius: 2rem;
+            font-size: 1rem;
+            background: #f5efe8;
+            color: #2c1f14;
+            outline: none;
+        }
+        .popup-box .form-group input:focus {
+            border-color: #2c1f14;
+            background: #fffcf8;
+        }
+        .popup-box .popup-actions {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+        }
+        .popup-box .popup-actions button {
+            flex: 1;
+            font-size: 1rem;
+            padding: 0.6rem 0;
+            min-height: 48px;
+        }
+
+        /* ---- Spieler-Tags ---- */
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.5rem 0 0.8rem;
+            padding: 0.4rem;
+            border: 2px dashed #dccfc0;
+            border-radius: 2rem;
+            min-height: 48px;
+            align-items: center;
+        }
+        .tag {
+            background: #e6dacb;
+            border-radius: 2rem;
+            padding: 0.2rem 0.8rem 0.2rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 700;
+            border: 2px solid #cbb8a5;
+            font-size: 0.9rem;
+        }
+        .tag .remove {
+            cursor: pointer;
+            font-weight: 700;
+            color: #7b6856;
+            font-size: 1.2rem;
+            line-height: 1;
+            background: none;
+            border: none;
+            padding: 0 0.2rem;
+            box-shadow: none;
+            min-height: auto;
+        }
+        .tag .remove:active {
+            transform: scale(0.9);
+        }
+
+        .spieler-liste {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 0.2rem;
+        }
+        .spieler-liste .spieler-item {
+            background: #f5efe8;
+            border: 2px solid #dccfc0;
+            border-radius: 2rem;
+            padding: 0.2rem 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.1s;
+            font-size: 0.9rem;
+        }
+        .spieler-liste .spieler-item:active {
+            background: #dccfc0;
+            transform: scale(0.95);
+        }
+        .spieler-liste .spieler-item.ausgewaehlt {
+            background: #3b7a5a;
+            color: white;
+            border-color: #2f6247;
+        }
+        .spieler-liste .spieler-item.ausgewaehlt:active {
+            background: #2f6247;
+        }
+
+        /* ----- Bibliothek ----- */
+        .bibliothek-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            flex: 1 1 auto;
+            overflow-y: auto;
+        }
+        .bibliothek-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            background: #f5efe8;
+            border-radius: 1.8rem;
+            border: 2px solid #e6dacb;
+            flex-wrap: wrap;
+            gap: 0.4rem 1rem;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .bibliothek-item:active {
+            background: #e6dacb;
+            transform: scale(0.99);
+        }
+        .bibliothek-item .meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem 1rem;
+            align-items: baseline;
+        }
+        .bibliothek-item .titel {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .bibliothek-item .datum {
+            color: #7b6856;
+            font-size: 0.8rem;
+        }
+        .bibliothek-item .info {
+            color: #7b6856;
+            font-size: 0.8rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #7b6856;
+            padding: 2rem 0;
+            font-style: italic;
+        }
+
+        /* ----- Animation (Säulen) ----- */
+        .animation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 31, 20, 0.7);
+            backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+        .animation-box {
+            background: #fffcf8;
+            border-radius: 2.5rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            border: 3px solid #dccfc0;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .animation-box h2 {
+            margin-bottom: 1rem;
+        }
+        .animation-box .chart {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 1.2rem;
+            height: 250px;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-bottom: 3px solid #2c1f14;
+        }
+        .animation-box .bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            flex: 0 0 60px;
+            transition: all 0.1s;
+        }
+        .animation-box .bar {
+            width: 40px;
+            background: #3b7a5a;
+            border-radius: 1rem 1rem 0 0;
+            min-height: 10px;
+            transition: height 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid #2f6247;
+            border-bottom: none;
+        }
+        .animation-box .bar-label {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .animation-box .bar-rank {
+            font-size: 0.7rem;
+            color: #7b6856;
+        }
+        .animation-box .close-btn {
+            margin-top: 1rem;
+        }
+
+        /* ----- Stats & Settings Panels (Slide-in von rechts) ----- */
+        .slide-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            background: #fffcf8;
+            border-left: 3px solid #dccfc0;
+            box-shadow: -8px 0 30px rgba(0, 0, 0, 0.1);
+            z-index: 1500;
+            padding: 1.5rem 1.2rem;
+            overflow-y: auto;
+            transition: transform 0.25s ease;
+            transform: translateX(100%);
+        }
+        .slide-panel.open {
+            transform: translateX(0);
+        }
+        .slide-panel h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .slide-panel .close-panel {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #2c1f14;
+            padding: 0 0.5rem;
+        }
+        .slide-panel .setting-group {
+            margin-bottom: 1.2rem;
+            border-bottom: 2px dashed #e6dacb;
+            padding-bottom: 0.8rem;
+        }
+        .slide-panel .setting-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            color: #2c1f14;
+        }
+        .slide-panel .toggle-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.2rem;
+        }
+        .slide-panel .toggle-row button {
+            flex: 1;
+            min-width: 60px;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            min-height: 36px;
+            background: #f5efe8;
+            border-color: #dccfc0;
+            box-shadow: 0 1px 0 #b8a28b;
+        }
+        .slide-panel .toggle-row button.active {
+            background: #2c1f14;
+            color: #f5f0e8;
+            border-color: #2c1f14;
+            box-shadow: 0 2px 0 #1f140c;
+        }
+        .slide-panel .toggle-row button:active {
+            transform: scale(0.95);
+        }
+        .slide-panel .app-name-input {
+            width: 100%;
+            padding: 0.4rem 0.8rem;
+            border: 2px solid #dccfc0;
+            border-radius: 2rem;
+            font-family: 'Happy Monkey', cursive;
+            font-size: 1rem;
+            background: #f5efe8;
+            color: #2c1f14;
+            outline: none;
+        }
+        .slide-panel .app-name-input:focus {
+            border-color: #2c1f14;
+        }
+        .slide-panel .info-text {
+            color: #7b6856;
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+        }
+        .slide-panel .import-export {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+        .slide-panel .import-export button {
+            flex: 1;
+            min-width: 80px;
+        }
+        .slide-panel .import-export input[type="file"] {
+            display: none;
+        }
+
+        /* Stats spezifisch */
+        .stats-tabs {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.8rem;
+            justify-content: center;
+        }
+        .stats-tabs button {
+            flex: 1;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            min-height: 36px;
+            background: #f5efe8;
+            border-color: #dccfc0;
+            box-shadow: 0 1px 0 #b8a28b;
+        }
+        .stats-tabs button.active {
+            background: #2c1f14;
+            color: #f5f0e8;
+            border-color: #2c1f14;
+            box-shadow: 0 2px 0 #1f140c;
+        }
+        .stats-list {
+            margin-top: 0.5rem;
+        }
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0.5rem;
+            border-bottom: 1px solid #ede5da;
+            font-size: 0.9rem;
+        }
+        .stats-item .rank {
+            color: #7b6856;
+            margin-right: 0.6rem;
+        }
+        .stats-item .name {
+            font-weight: 700;
+        }
+        .stats-item .avg {
+            font-weight: 700;
+        }
+
+        /* ----- Hilfsklassen ----- */
+        .hidden {
+            display: none !important;
+        }
+        .mt-1 {
+            margin-top: 1rem;
+        }
+        .mb-1 {
+            margin-bottom: 1rem;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .flex {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        /* ----- Responsive ----- */
+        @media (max-width: 500px) {
+            #app {
+                padding: 0.8rem 0.6rem 1.5rem;
+                border-radius: 1.5rem;
+            }
+            .spiel-info {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.8rem;
+            }
+            table {
+                font-size: 0.7rem;
+                min-width: 300px;
+            }
+            th,
+            td {
+                padding: 0.3rem 0.2rem;
+            }
+            th:first-child,
+            td:first-child {
+                padding-left: 0.5rem;
+            }
+            th:last-child,
+            td:last-child {
+                padding-right: 0.5rem;
+            }
+            .spieler-actions button {
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
+                min-height: 40px;
+                flex: 1 0 auto;
+            }
+            .popup-box {
+                padding: 1.2rem 1rem 1.5rem;
+            }
+            .popup-input-area input {
+                font-size: 1.8rem;
+                min-height: 60px;
+            }
+            .popup-tasten button {
+                font-size: 1.5rem;
+                min-height: 50px;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            h2 {
+                font-size: 1.8rem;
+            }
+            .popup-box {
+                max-width: 100%;
+                width: 95%;
+            }
+            .spieler-liste {
+                max-height: 100px;
+            }
+            .animation-box .chart {
+                height: 180px;
+                gap: 0.8rem;
+            }
+            .animation-box .bar-wrapper {
+                flex: 0 0 40px;
+            }
+            .animation-box .bar {
+                width: 28px;
+            }
+            .stats-tabs button {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+                min-height: 30px;
+            }
+            .slide-panel {
+                max-width: 100%;
+            }
+            .header-actions button:not(.icon) {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+                min-height: 36px;
+            }
+            button.icon {
+                min-width: 40px;
+                font-size: 1.4rem;
+                padding: 0.4rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .spieler-actions button {
+                flex: 1 0 45%;
+            }
+        }
+
+        /* ----- Farbverlauf für Zellen (wird dynamisch gesetzt) ----- */
+        .cell-score {
+            font-weight: 700;
+        }
+
+        /* Titel-Edit im Spielerstellung-Popup */
+        .titel-edit {
+            font-family: 'Happy Monkey', cursive;
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-bottom: 3px dashed #dccfc0;
+            padding: 0.2rem 0.5rem;
+            width: 100%;
+            color: #2c1f14;
+            outline: none;
+        }
+        .titel-edit:focus {
+            border-bottom-color: #2c1f14;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+
+        <!-- Header -->
+        <header>
+            <div class="logo" id="logoHome">
+                <span>♠</span> <span id="appNameDisplay">Kartenspiel‑Bibliothek</span>
+            </div>
+            <div class="header-actions" id="headerActions">
+                <!-- Dynamisch befüllt -->
+            </div>
+        </header>
+
+        <!-- Hauptbereich -->
+        <div id="mainArea" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+            <!-- Wird von JS gerendert -->
+        </div>
+
+    </div>
+
+    <!-- Settings Panel (Slide-in) -->
+    <div class="slide-panel" id="settingsPanel">
+        <h2>Einstellungen <span class="close-panel" id="closeSettings">✕</span></h2>
+
+        <div class="setting-group">
+            <label>Anzeige in Tabelle</label>
+            <div class="toggle-row" data-setting="scoreDisplay">
+                <button data-value="round">Runden-Scores</button>
+                <button data-value="total">Gesamt-Scores</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Gesamt-Score Zeile</label>
+            <div class="toggle-row" data-setting="showTotalRow">
+                <button data-value="on">An</button>
+                <button data-value="off">Aus</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Farbige Tabellenfelder</label>
+            <div class="toggle-row" data-setting="colorMode">
+                <button data-value="off">Aus</button>
+                <button data-value="round">Nach Runden-Scores</button>
+                <button data-value="total">Nach Gesamt-Scores</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Datums-Spalte</label>
+            <div class="toggle-row" data-setting="dateDisplay">
+                <button data-value="off">Aus</button>
+                <button data-value="datetime">Tag & Zeit</button>
+                <button data-value="date">Tag</button>
+                <button data-value="time">Zeit</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Runden-Nummer Spalte</label>
+            <div class="toggle-row" data-setting="showRoundNr">
+                <button data-value="on">An</button>
+                <button data-value="off">Aus</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Gesamt-Scores auf Buttons</label>
+            <div class="toggle-row" data-setting="showButtonScores">
+                <button data-value="on">An</button>
+                <button data-value="off">Aus</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Button-Scores einfärben</label>
+            <div class="toggle-row" data-setting="colorButtons">
+                <button data-value="on">An</button>
+                <button data-value="off">Aus</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Automatisch nach unten scrollen</label>
+            <div class="toggle-row" data-setting="autoScroll">
+                <button data-value="on">An</button>
+                <button data-value="off">Aus</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Average-Punktzahl Zeile</label>
+            <div class="toggle-row" data-setting="showAverage">
+                <button data-value="on">An</button>
+                <button data-value="off">Aus</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>Info-Zeile (über Tabelle)</label>
+            <div class="toggle-row" data-setting="infoTitel">
+                <button data-value="on">Titel</button>
+                <button data-value="off">Aus</button>
+            </div>
+            <div class="toggle-row" data-setting="infoSpieler">
+                <button data-value="on">Spieler</button>
+                <button data-value="off">Aus</button>
+            </div>
+            <div class="toggle-row" data-setting="infoRunden">
+                <button data-value="on">Runden</button>
+                <button data-value="off">Aus</button>
+            </div>
+            <div class="toggle-row" data-setting="infoStartzeit">
+                <button data-value="on">Startzeit</button>
+                <button data-value="off">Aus</button>
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <label>App-Name</label>
+            <input type="text" class="app-name-input" id="appNameInput" />
+        </div>
+
+        <div class="setting-group">
+            <label>Import / Export</label>
+            <div class="import-export">
+                <button id="exportBtn" class="success">📤 Export</button>
+                <button id="importBtn" class="primary">📥 Import</button>
+                <input type="file" id="importFileInput" accept=".json" />
+            </div>
+        </div>
+
+        <div class="setting-group">
+            <div class="info-text">♠ Speicherort: Lokaler Browser-Speicher (localStorage).</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  DATENMANAGEMENT (localStorage)
+        // ============================================================
+        const STORAGE_KEY = 'kartenspiel_bibliothek';
+        const AKTIV_KEY = 'kartenspiel_aktiv';
+        const SPIELER_LISTE_KEY = 'kartenspiel_spielerliste';
+        const SETTINGS_KEY = 'kartenspiel_settings';
+
+        function ladeSpiele() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+        }
+
+        function speichereSpiele(spiele) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(spiele));
+        }
+
+        function ladeAktivesSpiel() {
+            try { return JSON.parse(localStorage.getItem(AKTIV_KEY)) || null; } catch { return null; }
+        }
+
+        function speichereAktivesSpiel(spiel) {
+            if (spiel) localStorage.setItem(AKTIV_KEY, JSON.stringify(spiel));
+            else localStorage.removeItem(AKTIV_KEY);
+        }
+
+        function ladeSpielerListe() {
+            try { return JSON.parse(localStorage.getItem(SPIELER_LISTE_KEY)) || []; } catch { return []; }
+        }
+
+        function speichereSpielerListe(liste) {
+            localStorage.setItem(SPIELER_LISTE_KEY, JSON.stringify(liste));
+        }
+
+        function ladeSettings() {
+            try {
+                const s = JSON.parse(localStorage.getItem(SETTINGS_KEY));
+                return s || {};
+            } catch { return {}; }
+        }
+
+        function speichereSettings(settings) {
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+        }
+
+        function generiereId() {
+            return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        }
+
+        function aktuellesDatum() {
+            return new Date().toISOString();
+        }
+
+        function formatDatum(iso, mode) {
+            const d = new Date(iso);
+            if (mode === 'date') return d.toLocaleDateString('de-DE');
+            if (mode === 'time') return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+            if (mode === 'datetime') return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit' });
+            return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit',
+                minute: '2-digit' });
+        }
+
+        // ============================================================
+        //  APP-STATE & SETTINGS
+        // ============================================================
+        let aktuellesSpiel = ladeAktivesSpiel();
+        let anzeigeSpiel = null;
+        let spielerListe = ladeSpielerListe();
+        let settings = ladeSettings();
+
+        const defaultSettings = {
+            scoreDisplay: 'round',
+            showTotalRow: 'on',
+            colorMode: 'round',
+            dateDisplay: 'datetime',
+            showRoundNr: 'on',
+            showButtonScores: 'on',
+            colorButtons: 'on',
+            autoScroll: 'on',
+            showAverage: 'off',
+            infoTitel: 'on',
+            infoSpieler: 'on',
+            infoRunden: 'on',
+            infoStartzeit: 'on',
+            appName: 'Kartenspiel‑Bibliothek'
+        };
+        for (const key in defaultSettings) {
+            if (!(key in settings)) settings[key] = defaultSettings[key];
+        }
+        document.getElementById('appNameDisplay').textContent = settings.appName;
+
+        // ============================================================
+        //  RENDER-FUNKTIONEN
+        // ============================================================
+
+        const headerActions = document.getElementById('headerActions');
+        const mainArea = document.getElementById('mainArea');
+        const logoHome = document.getElementById('logoHome');
+        const settingsPanel = document.getElementById('settingsPanel');
+
+        function render() {
+            renderHeader();
+            renderMain();
+            updateSettingsUI();
+        }
+
+        function renderHeader() {
+            let html = '';
+            if (anzeigeSpiel) {
+                html += `<button class="outline" id="btnDetailZurueck">← Zurück</button>`;
+                html += `<button class="success" id="btnWiederAufnehmen">↻ Wieder aufnehmen</button>`;
+                html += `<button class="danger" id="btnSpielLoeschen">✕ Löschen</button>`;
+            } else if (aktuellesSpiel) {
+                html += `<button class="danger" id="btnSpielBeenden">✕ Beenden</button>`;
+                html += `<button class="outline" id="btnSpielerVerwalten">◈ Spieler</button>`;
+            } else {
+                html += `<button class="primary" id="btnNeuesSpiel">+ Neues Spiel</button>`;
+                html += `<button class="outline" id="btnSpielerVerwalten">◈ Spieler</button>`;
+            }
+            // Statistics Button (immer sichtbar) – nur Symbol
+            html += `<button class="icon right" id="btnStatistics">∑</button>`;
+            // Settings Button – nur Symbol
+            html += `<button class="icon right" id="btnSettings">⚙</button>`;
+            headerActions.innerHTML = html;
+
+            // Event-Listener
+            document.getElementById('btnNeuesSpiel')?.addEventListener('click', () => zeigeSpielErstellungPopup());
+            document.getElementById('btnSpielBeenden')?.addEventListener('click', () => {
+                if (aktuellesSpiel) {
+                    if (aktuellesSpiel.runden.length === 0) {
+                        if (!confirm('Keine Runden. Trotzdem beenden?')) return;
+                    }
+                    zeigeEndAnimation(aktuellesSpiel);
+                }
+            });
+            document.getElementById('btnSpielerVerwalten')?.addEventListener('click', () => zeigeSpielerVerwaltungPopup());
+            document.getElementById('btnDetailZurueck')?.addEventListener('click', () => {
+                anzeigeSpiel = null;
+                render();
+            });
+            document.getElementById('btnWiederAufnehmen')?.addEventListener('click', () => {
+                if (anzeigeSpiel) {
+                    speichereAktivesSpiel(anzeigeSpiel);
+                    aktuellesSpiel = anzeigeSpiel;
+                    anzeigeSpiel = null;
+                    render();
+                }
+            });
+            document.getElementById('btnSpielLoeschen')?.addEventListener('click', () => {
+                if (anzeigeSpiel && confirm(`Spiel "${anzeigeSpiel.titel}" wirklich löschen?`)) {
+                    let alle = ladeSpiele();
+                    alle = alle.filter(s => s.id !== anzeigeSpiel.id);
+                    speichereSpiele(alle);
+                    anzeigeSpiel = null;
+                    render();
+                }
+            });
+            document.getElementById('btnSettings')?.addEventListener('click', () => {
+                // Schließe Stats Panel falls offen
+                const statsPanel = document.getElementById('statsPanel');
+                if (statsPanel) statsPanel.classList.remove('open');
+                settingsPanel.classList.toggle('open');
+                updateSettingsUI();
+            });
+            document.getElementById('btnStatistics')?.addEventListener('click', () => {
+                // Schließe Settings Panel falls offen
+                settingsPanel.classList.remove('open');
+                // Stats Panel öffnen (oder togglen)
+                let statsPanel = document.getElementById('statsPanel');
+                if (!statsPanel) {
+                    statsPanel = document.createElement('div');
+                    statsPanel.id = 'statsPanel';
+                    statsPanel.className = 'slide-panel';
+                    document.body.appendChild(statsPanel);
+                }
+                statsPanel.classList.toggle('open');
+                if (statsPanel.classList.contains('open')) {
+                    renderStatistics(statsPanel);
+                }
+            });
+
+            logoHome.onclick = () => {
+                if (anzeigeSpiel) {
+                    anzeigeSpiel = null;
+                    render();
+                } else {
+                    if (!aktuellesSpiel) {}
+                }
+            };
+        }
+
+        function renderMain() {
+            if (anzeigeSpiel) {
+                renderDetailAnsicht(anzeigeSpiel);
+            } else if (aktuellesSpiel) {
+                renderSpielansicht();
+            } else {
+                renderBibliothek();
+            }
+            if (settings.autoScroll === 'on') {
+                const wrap = document.querySelector('.table-wrap');
+                if (wrap) wrap.scrollTop = wrap.scrollHeight;
+            }
+        }
+
+        // ============================================================
+        //  SPIELANSICHT (aktiv)
+        // ============================================================
+        function renderSpielansicht() {
+            const s = aktuellesSpiel;
+            if (!s) return;
+
+            let infoHtml = '';
+            const infoItems = [];
+            if (settings.infoTitel === 'on') infoItems.push(`<span><span class="label">Titel</span><span class="value titel-edit" id="titelEdit">${s.titel || 'Unbenannt'}</span></span>`);
+            if (settings.infoSpieler === 'on') infoItems.push(`<span><span class="label">Spieler</span><span class="value">${s.spieler.join(', ')}</span></span>`);
+            if (settings.infoRunden === 'on') infoItems.push(`<span><span class="label">Runden</span><span class="value">${s.runden.length}</span></span>`);
+            if (settings.infoStartzeit === 'on') infoItems.push(`<span><span class="label">Start</span><span class="value">${formatDatum(s.datum)}</span></span>`);
+            if (infoItems.length > 0) {
+                infoHtml = `<div class="spiel-info">${infoItems.join('')}</div>`;
+            }
+
+            let html = infoHtml;
+            html += renderTabelle(s);
+
+            const totals = berechneTotals(s);
+            let btnHtml = `<div class="spieler-actions" id="spielerActions">`;
+            s.spieler.forEach(name => {
+                const punkte = totals[name] || 0;
+                let badge = '';
+                if (settings.showButtonScores === 'on') {
+                    badge = ` <span class="punkte-badge" data-name="${name}">${punkte}</span>`;
+                }
+                btnHtml += `<button class="spieler-btn" data-name="${name}">${name}${badge}</button>`;
+            });
+            btnHtml += `</div>`;
+            html += btnHtml;
+
+            mainArea.innerHTML = html;
+
+            const titelEl = document.getElementById('titelEdit');
+            if (titelEl) {
+                titelEl.addEventListener('click', () => {
+                    const neu = prompt('Neuer Titel:', aktuellesSpiel.titel || '');
+                    if (neu !== null && neu.trim() !== '') {
+                        aktuellesSpiel.titel = neu.trim();
+                        speichereAktivesSpiel(aktuellesSpiel);
+                        render();
+                    }
+                });
+            }
+
+            document.querySelectorAll('.spieler-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const name = btn.dataset.name;
+                    oeffnePunktePopup(name);
+                });
+            });
+
+            if (settings.colorButtons === 'on') {
+                const scores = s.spieler.map(n => totals[n] || 0);
+                const min = Math.min(...scores);
+                const max = Math.max(...scores);
+                const range = max - min;
+                document.querySelectorAll('.spieler-btn').forEach((btn, idx) => {
+                    const name = btn.dataset.name;
+                    const val = totals[name] || 0;
+                    if (range !== 0) {
+                        const ratio = (val - min) / range;
+                        const hue = ratio * 120;
+                        btn.style.background = `hsl(${hue}, 65%, 72%)`;
+                    } else {
+                        btn.style.background = '#f5efe8';
+                    }
+                    const badge = btn.querySelector('.punkte-badge');
+                    if (badge) {
+                        const bg = val > 0 ? '#2c1f14' : (val < 0 ? '#b85a4a' : '#7b6856');
+                        badge.style.background = bg;
+                    }
+                });
+            }
+        }
+
+        // ============================================================
+        //  TABELLE (mit allen Einstellungen)
+        // ============================================================
+        function renderTabelle(spiel) {
+            if (spiel.runden.length === 0) {
+                return `<div class="empty-state" style="padding:1.5rem;">Noch keine Runden gespielt.</div>`;
+            }
+
+            const spieler = spiel.spieler;
+            const showRoundNr = settings.showRoundNr === 'on';
+            const dateMode = settings.dateDisplay;
+            const showTotalRow = settings.showTotalRow === 'on';
+            const showAverage = settings.showAverage === 'on';
+            const colorMode = settings.colorMode;
+            const scoreDisplay = settings.scoreDisplay;
+
+            const fixCols = (showRoundNr ? 1 : 0) + (dateMode !== 'off' ? 1 : 0);
+
+            let html = `<div class="table-wrap"><table>
+                <thead><tr>
+                    ${showRoundNr ? '<th>#</th>' : ''}
+                    ${dateMode !== 'off' ? '<th>Datum</th>' : ''}
+                    ${spieler.map(n => `<th>${n}</th>`).join('')}
+                </tr></thead><tbody>
+            `;
+
+            // Average-Zeile (ganz oben) – nur das Symbol ⌀
+            if (showAverage) {
+                const avg = {};
+                spieler.forEach(n => {
+                    const vals = spiel.runden.map(r => r.punkte[n] !== undefined ? r.punkte[n] : null).filter(v => v !==
+                    null);
+                    avg[n] = vals.length > 0 ? (vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+                });
+                let avgRow = `<tr class="average-row"><td colspan="${fixCols}">⌀</td>`;
+                spieler.forEach(n => {
+                    avgRow += `<td>${avg[n].toFixed(1)}</td>`;
+                });
+                avgRow += `</tr>`;
+                html += avgRow;
+            }
+
+            // Runden
+            const totals = berechneTotals(spiel);
+            const totalValues = spieler.map(n => totals[n] || 0);
+            const minTotal = Math.min(...totalValues);
+            const maxTotal = Math.max(...totalValues);
+            const rangeTotal = maxTotal - minTotal;
+
+            spiel.runden.forEach((runde, idx) => {
+                const nr = idx + 1;
+                const dateStr = dateMode !== 'off' ? formatDatum(runde.zeitstempel || spiel.datum, dateMode) : '';
+                const roundValues = spieler.map(name => runde.punkte[name] !== undefined ? runde.punkte[name] : null);
+                const vorhanden = roundValues.filter(v => v !== null);
+                let minR = 0,
+                    maxR = 0,
+                    rangeR = 0;
+                if (vorhanden.length > 0) {
+                    minR = Math.min(...vorhanden);
+                    maxR = Math.max(...vorhanden);
+                    rangeR = maxR - minR;
+                }
+
+                let rowHtml = `<tr>`;
+                if (showRoundNr) rowHtml += `<td class="runden-nr">${nr}</td>`;
+                if (dateMode !== 'off') rowHtml += `<td class="datum-cell">${dateStr}</td>`;
+
+                spieler.forEach((name, i) => {
+                    let val = null;
+                    let displayVal = '-';
+                    let bgColor = '#ffffff';
+                    if (scoreDisplay === 'round') {
+                        val = roundValues[i];
+                        if (val !== null) {
+                            displayVal = val > 0 ? '+' + val : String(val);
+                            if (colorMode === 'round' && rangeR !== 0 && val !== null) {
+                                const ratio = (val - minR) / rangeR;
+                                const hue = ratio * 120;
+                                bgColor = `hsl(${hue}, 65%, 72%)`;
+                            } else if (colorMode === 'total') {
+                                const totalVal = totals[name] || 0;
+                                if (rangeTotal !== 0) {
+                                    const ratio = (totalVal - minTotal) / rangeTotal;
+                                    const hue = ratio * 120;
+                                    bgColor = `hsl(${hue}, 65%, 72%)`;
+                                }
+                            }
+                        } else {
+                            bgColor = '#f8f6f2';
+                        }
+                    } else { // total
+                        const cumul = {};
+                        spieler.forEach(n => cumul[n] = 0);
+                        for (let j = 0; j <= idx; j++) {
+                            const r = spiel.runden[j];
+                            spieler.forEach(n => {
+                                const v = r.punkte[n];
+                                if (v !== undefined) cumul[n] += v;
+                            });
+                        }
+                        const cumVal = cumul[name] || 0;
+                        displayVal = cumVal > 0 ? '+' + cumVal : String(cumVal);
+                        if (colorMode === 'total' || colorMode === 'round') {
+                            const allCum = spieler.map(n => cumul[n] || 0);
+                            const minC = Math.min(...allCum);
+                            const maxC = Math.max(...allCum);
+                            const rangeC = maxC - minC;
+                            if (rangeC !== 0) {
+                                const ratio = ((cumul[name] || 0) - minC) / rangeC;
+                                const hue = ratio * 120;
+                                bgColor = `hsl(${hue}, 65%, 72%)`;
+                            }
+                        }
+                    }
+                    rowHtml += `<td style="background-color: ${bgColor}; font-weight: 700;">${displayVal}</td>`;
+                });
+
+                rowHtml += `</tr>`;
+                html += rowHtml;
+            });
+
+            // Total-Zeile (ganz unten)
+            if (showTotalRow) {
+                let totalRow = `<tr class="total-row"><td colspan="${fixCols}">Gesamt</td>`;
+                spieler.forEach(name => {
+                    const val = totals[name] || 0;
+                    totalRow += `<td>${val}</td>`;
+                });
+                totalRow += `</tr>`;
+                html += totalRow;
+            }
+
+            html += `</tbody></table></div>`;
+            return html;
+        }
+
+        function berechneTotals(spiel) {
+            const totals = {};
+            spiel.spieler.forEach(n => totals[n] = 0);
+            spiel.runden.forEach(runde => {
+                spiel.spieler.forEach(n => {
+                    const v = runde.punkte[n];
+                    if (v !== undefined) totals[n] += v;
+                });
+            });
+            return totals;
+        }
+
+        // ============================================================
+        //  PUNKTE-POPUP (Custom-Tastatur, OS-Tastatur deaktiviert)
+        // ============================================================
+        function oeffnePunktePopup(spielerName) {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.id = 'popupOverlay';
+
+            overlay.innerHTML = `
+                <div class="popup-box">
+                    <h3>${spielerName}</h3>
+                    <div class="sub">Punkte für diese Runde</div>
+                    <div class="popup-input-area">
+                        <input type="text" id="popupInput" readonly placeholder="0" />
+                        <div class="popup-tasten">
+                            <button class="op" data-action="7">7</button>
+                            <button class="op" data-action="8">8</button>
+                            <button class="op" data-action="9">9</button>
+                            <button class="op" data-action="4">4</button>
+                            <button class="op" data-action="5">5</button>
+                            <button class="op" data-action="6">6</button>
+                            <button class="op" data-action="1">1</button>
+                            <button class="op" data-action="2">2</button>
+                            <button class="op" data-action="3">3</button>
+                            <button class="op" data-action="+">+</button>
+                            <button class="op" data-action="0">0</button>
+                            <button class="op" data-action="-">−</button>
+                            <button class="clear" data-action="clear">⌫</button>
+                            <button class="cancel" data-action="cancel">Abbr</button>
+                            <button class="enter" data-action="enter">✓</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            const input = document.getElementById('popupInput');
+            input.focus();
+
+            overlay.querySelectorAll('.popup-tasten button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const action = btn.dataset.action;
+                    handlePunktePopupAction(action, input, spielerName, overlay);
+                });
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    popupPunkteBestätigen(input, spielerName, overlay);
+                }
+                if (e.key === 'Escape') {
+                    overlay.remove();
+                }
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.remove();
+            });
+        }
+
+        function handlePunktePopupAction(action, input, spielerName, overlay) {
+            if (action === 'clear') {
+                input.value = input.value.slice(0, -1);
+            } else if (action === 'cancel') {
+                overlay.remove();
+            } else if (action === 'enter') {
+                popupPunkteBestätigen(input, spielerName, overlay);
+            } else {
+                const last = input.value.slice(-1);
+                if (['+', '-'].includes(action)) {
+                    if (['+', '-'].includes(last)) {
+                        input.value = input.value.slice(0, -1) + action;
+                    } else {
+                        input.value += action;
+                    }
+                } else {
+                    input.value += action;
+                }
+            }
+            input.focus();
+        }
+
+        function popupPunkteBestätigen(input, spielerName, overlay) {
+            let wert = input.value.trim();
+            if (wert === '') wert = '0';
+            const num = parseInt(wert);
+            if (isNaN(num)) {
+                alert('Bitte eine gültige Zahl eingeben.');
+                return;
+            }
+            if (aktuellesSpiel) {
+                const anzahl = aktuellesSpiel.runden.filter(r => r.punkte[spielerName] !== undefined).length;
+                const rundenIndex = anzahl;
+                if (rundenIndex < aktuellesSpiel.runden.length) {
+                    aktuellesSpiel.runden[rundenIndex].punkte[spielerName] = num;
+                } else {
+                    const neueRunde = { punkte: {}, zeitstempel: aktuellesDatum() };
+                    neueRunde.punkte[spielerName] = num;
+                    aktuellesSpiel.runden.push(neueRunde);
+                }
+                speichereAktivesSpiel(aktuellesSpiel);
+                overlay.remove();
+                render();
+            } else {
+                overlay.remove();
+            }
+        }
+
+        // ============================================================
+        //  SPIELER-VERWALTUNG (Popup)
+        // ============================================================
+        function zeigeSpielerVerwaltungPopup() {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.id = 'spielerVerwaltungOverlay';
+
+            const liste = ladeSpielerListe();
+
+            overlay.innerHTML = `
+                <div class="popup-box">
+                    <h3>◈ Spieler verwalten</h3>
+                    <div class="form-group">
+                        <label>Neuen Spieler hinzufügen</label>
+                        <div style="display:flex; gap:0.4rem;">
+                            <input type="text" id="neuerSpielerInput" placeholder="Name" />
+                            <button id="btnSpielerHinzufuegen" class="success" style="flex:0 0 auto;">+</button>
+                        </div>
+                    </div>
+                    <div style="margin-top:0.5rem;">
+                        <label>Vorhandene Spieler</label>
+                        <div id="spielerListeContainer" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.3rem;">
+                            ${liste.map(name => `
+                                <span class="tag" style="background:#f5efe8;">
+                                    ${name}
+                                    <span class="remove" data-name="${name}" style="cursor:pointer;">✕</span>
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="popup-actions">
+                        <button class="cancel" id="spielerVerwaltungSchliessen">Schließen</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            function aktualisiereListe() {
+                const container = document.getElementById('spielerListeContainer');
+                const aktuelle = ladeSpielerListe();
+                container.innerHTML = aktuelle.map(name => `
+                    <span class="tag" style="background:#f5efe8;">
+                        ${name}
+                        <span class="remove" data-name="${name}" style="cursor:pointer;">✕</span>
+                    </span>
+                `).join('');
+                container.querySelectorAll('.remove').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const name = el.dataset.name;
+                        let list = ladeSpielerListe();
+                        list = list.filter(n => n !== name);
+                        speichereSpielerListe(list);
+                        spielerListe = list;
+                        aktualisiereListe();
+                    });
+                });
+            }
+
+            document.getElementById('btnSpielerHinzufuegen').addEventListener('click', () => {
+                const input = document.getElementById('neuerSpielerInput');
+                const name = input.value.trim();
+                if (name) {
+                    let list = ladeSpielerListe();
+                    if (!list.includes(name)) {
+                        list.push(name);
+                        speichereSpielerListe(list);
+                        spielerListe = list;
+                        aktualisiereListe();
+                        input.value = '';
+                    } else {
+                        alert('Spieler existiert bereits.');
+                    }
+                }
+            });
+
+            document.getElementById('spielerVerwaltungSchliessen').addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.remove();
+            });
+
+            aktualisiereListe();
+        }
+
+        // ============================================================
+        //  CUSTOM POPUP FÜR SPIELERSTELLUNG (mit Tags & globaler Liste)
+        // ============================================================
+        function zeigeSpielErstellungPopup() {
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.id = 'spielErstellungOverlay';
+
+            const defaultTitel = formatDatum(aktuellesDatum());
+            let ausgewaehlteSpieler = [];
+            const globaleListe = ladeSpielerListe();
+
+            overlay.innerHTML = `
+                <div class="popup-box">
+                    <input type="text" class="titel-edit" id="spielTitelInput" value="${defaultTitel}" placeholder="Titel" />
+                    <div style="margin-top:0.5rem;">
+                        <label style="font-weight:700;">Spieler</label>
+                        <div class="tag-container" id="tagContainer">
+                            <span style="color:#7b6856; font-size:0.8rem;" id="tagPlaceholder">Keine Spieler ausgewählt</span>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:0.2rem;">
+                        <label>Neuen Spieler hinzufügen</label>
+                        <div style="display:flex; gap:0.4rem;">
+                            <input type="text" id="neuerSpielerFeld" placeholder="Name" />
+                            <button id="btnNeuenSpielerHinzufuegen" class="success" style="flex:0 0 auto;">+</button>
+                        </div>
+                    </div>
+                    <div style="margin-top:0.5rem;">
+                        <label>Vorhandene Spieler (tippen zum Hinzufügen)</label>
+                        <div class="spieler-liste" id="globaleSpielerListe">
+                            ${globaleListe.map(name => `
+                                <span class="spieler-item" data-name="${name}">${name}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="popup-actions">
+                        <button class="cancel" id="spielErstellungAbbrechen">Abbrechen</button>
+                        <button class="success" id="spielErstellungStarten">Spiel starten</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            const tagContainer = document.getElementById('tagContainer');
+            const globaleListeContainer = document.getElementById('globaleSpielerListe');
+            const titelInput = document.getElementById('spielTitelInput');
+
+            function renderTags() {
+                tagContainer.innerHTML = '';
+                if (ausgewaehlteSpieler.length === 0) {
+                    tagContainer.innerHTML = `<span style="color:#7b6856; font-size:0.8rem;">Keine Spieler ausgewählt</span>`;
+                } else {
+                    ausgewaehlteSpieler.forEach(name => {
+                        const tag = document.createElement('span');
+                        tag.className = 'tag';
+                        tag.innerHTML = `${name} <span class="remove" data-name="${name}" style="cursor:pointer;">✕</span>`;
+                        tagContainer.appendChild(tag);
+                    });
+                    tagContainer.querySelectorAll('.remove').forEach(el => {
+                        el.addEventListener('click', () => {
+                            const name = el.dataset.name;
+                            ausgewaehlteSpieler = ausgewaehlteSpieler.filter(n => n !== name);
+                            renderTags();
+                            aktualisiereGlobaleListe();
+                        });
+                    });
+                }
+            }
+
+            function aktualisiereGlobaleListe() {
+                const alle = ladeSpielerListe();
+                globaleListeContainer.innerHTML = alle.map(name => {
+                    const selected = ausgewaehlteSpieler.includes(name);
+                    return `<span class="spieler-item ${selected ? 'ausgewaehlt' : ''}" data-name="${name}">${name}</span>`;
+                }).join('');
+                globaleListeContainer.querySelectorAll('.spieler-item').forEach(el => {
+                    el.addEventListener('click', () => {
+                        const name = el.dataset.name;
+                        if (ausgewaehlteSpieler.includes(name)) {
+                            ausgewaehlteSpieler = ausgewaehlteSpieler.filter(n => n !== name);
+                        } else {
+                            ausgewaehlteSpieler.push(name);
+                        }
+                        renderTags();
+                        aktualisiereGlobaleListe();
+                    });
+                });
+            }
+
+            document.getElementById('btnNeuenSpielerHinzufuegen').addEventListener('click', () => {
+                const input = document.getElementById('neuerSpielerFeld');
+                const name = input.value.trim();
+                if (name) {
+                    let list = ladeSpielerListe();
+                    if (!list.includes(name)) {
+                        list.push(name);
+                        speichereSpielerListe(list);
+                        spielerListe = list;
+                        if (!ausgewaehlteSpieler.includes(name)) {
+                            ausgewaehlteSpieler.push(name);
+                        }
+                        renderTags();
+                        aktualisiereGlobaleListe();
+                        input.value = '';
+                    } else {
+                        alert('Spieler existiert bereits.');
+                    }
+                }
+            });
+
+            document.getElementById('neuerSpielerFeld').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('btnNeuenSpielerHinzufuegen').click();
+                }
+            });
+
+            document.getElementById('spielErstellungStarten').addEventListener('click', () => {
+                if (ausgewaehlteSpieler.length < 2) {
+                    alert('Mindestens 2 Spieler auswählen.');
+                    return;
+                }
+                const titel = titelInput.value.trim() || formatDatum(aktuellesDatum());
+                const neuesSpiel = {
+                    id: generiereId(),
+                    titel: titel,
+                    datum: aktuellesDatum(),
+                    spieler: [...ausgewaehlteSpieler],
+                    runden: [],
+                    erstelltAm: aktuellesDatum()
+                };
+                speichereAktivesSpiel(neuesSpiel);
+                aktuellesSpiel = neuesSpiel;
+                anzeigeSpiel = null;
+                overlay.remove();
+                render();
+            });
+
+            document.getElementById('spielErstellungAbbrechen').addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.remove();
+            });
+
+            renderTags();
+            aktualisiereGlobaleListe();
+        }
+
+        // ============================================================
+        //  STATISTIKEN (Panel)
+        // ============================================================
+        function renderStatistics(panel) {
+            // Daten frisch aus der Bibliothek holen
+            const alle = ladeSpiele();
+            const allRounds = [];
+            alle.forEach(spiel => {
+                spiel.runden.forEach(runde => {
+                    const date = new Date(runde.zeitstempel || spiel.datum);
+                    allRounds.push({ date, spieler: spiel.spieler, punkte: runde.punkte });
+                });
+            });
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const monthAgo = new Date(today);
+            monthAgo.setDate(monthAgo.getDate() - 30);
+            const yearAgo = new Date(today);
+            yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+
+            const filterRunden = (start) => allRunden.filter(r => r.date >= start);
+
+            const berechneDurchschnitte = (runden) => {
+                const totals = {};
+                const counts = {};
+                runden.forEach(r => {
+                    const spieler = r.spieler;
+                    spieler.forEach(name => {
+                        const val = r.punkte[name];
+                        if (val !== undefined) {
+                            if (!totals[name]) totals[name] = 0;
+                            if (!counts[name]) counts[name] = 0;
+                            totals[name] += val;
+                            counts[name] += 1;
+                        }
+                    });
+                });
+                const avg = {};
+                for (const name in totals) {
+                    avg[name] = totals[name] / counts[name];
+                }
+                return avg;
+            };
+
+            const stats = {
+                today: berechneDurchschnitte(filterRunden(today)),
+                week: berechneDurchschnitte(filterRunden(weekAgo)),
+                month: berechneDurchschnitte(filterRunden(monthAgo)),
+                year: berechneDurchschnitte(filterRunden(yearAgo))
+            };
+
+            const zeitraeume = ['today', 'week', 'month', 'year'];
+            const labels = {
+                today: 'Heute',
+                week: '7 Tage',
+                month: '30 Tage',
+                year: '365 Tage'
+            };
+
+            panel.innerHTML = `
+                <h2>▦ Statistiken <span class="close-panel" id="closeStats">✕</span></h2>
+                <div class="stats-tabs" id="statsTabs">
+                    ${zeitraeume.map(p => `<button data-period="${p}" class="${p === 'today' ? 'active' : ''}">${labels[p]}</button>`).join('')}
+                </div>
+                <div class="stats-list" id="statsList">
+                    <!-- wird dynamisch befüllt -->
+                </div>
+            `;
+
+            function renderStats(period) {
+                const avgObj = stats[period] || {};
+                const sorted = Object.entries(avgObj)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([name, avg], idx) => ({ name, avg, rank: idx + 1 }));
+
+                const list = document.getElementById('statsList');
+                if (sorted.length === 0) {
+                    list.innerHTML = `<div class="empty-state">Keine Daten für diesen Zeitraum.</div>`;
+                } else {
+                    list.innerHTML = sorted.map(item => `
+                        <div class="stats-item">
+                            <span><span class="rank">#${item.rank}</span> <span class="name">${item.name}</span></span>
+                            <span class="avg">${item.avg.toFixed(1)}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // Tabs
+            document.querySelectorAll('#statsTabs button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#statsTabs button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderStats(btn.dataset.period);
+                });
+            });
+
+            // Initial rendern
+            renderStats('today');
+
+            document.getElementById('closeStats').addEventListener('click', () => {
+                panel.classList.remove('open');
+            });
+            // Klick auf Panel-Hintergrund schließt nicht (wie bei Settings)
+        }
+
+        // ============================================================
+        //  END-ANIMATION (Säulen)
+        // ============================================================
+        function zeigeEndAnimation(spiel) {
+            if (!spiel || spiel.runden.length === 0) {
+                beendeSpielDirekt(spiel);
+                return;
+            }
+
+            const totals = berechneTotals(spiel);
+            const spieler = spiel.spieler;
+            const sorted = spieler.map(n => ({ name: n, score: totals[n] || 0 }))
+                .sort((a, b) => b.score - a.score);
+
+            const top = sorted.slice(0, 5);
+
+            const overlay = document.createElement('div');
+            overlay.className = 'animation-overlay';
+            overlay.id = 'animationOverlay';
+
+            let barsHtml = '';
+            const maxScore = top.length > 0 ? top[0].score : 1;
+            const maxHeight = 200;
+
+            top.forEach((item, idx) => {
+                const height = maxScore !== 0 ? Math.max(10, (item.score / maxScore) * maxHeight) : 10;
+                barsHtml += `
+                    <div class="bar-wrapper">
+                        <div class="bar" style="height: ${height}px; transition-delay: ${idx * 0.15}s;"></div>
+                        <div class="bar-label">${item.name}</div>
+                        <div class="bar-rank" id="rank-${idx}">#${idx+1}</div>
+                    </div>
+                `;
+            });
+
+            overlay.innerHTML = `
+                <div class="animation-box">
+                    <h2>🏆 Spiel beendet!</h2>
+                    <div class="chart">
+                        ${barsHtml}
+                    </div>
+                    <button class="success close-btn" id="animationClose">Weiter</button>
+                </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            setTimeout(() => {
+                top.forEach((_, idx) => {
+                    const el = document.getElementById(`rank-${idx}`);
+                    if (el) el.textContent = `#${idx+1}`;
+                });
+            }, 1500);
+
+            document.getElementById('animationClose').addEventListener('click', () => {
+                overlay.remove();
+                beendeSpielDirekt(spiel);
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    // nichts
+                }
+            });
+        }
+
+        function beendeSpielDirekt(spiel) {
+            if (!spiel) return;
+            const spieleListe = ladeSpiele();
+            spieleListe.push({ ...spiel });
+            speichereSpiele(spieleListe);
+            speichereAktivesSpiel(null);
+            aktuellesSpiel = null;
+            anzeigeSpiel = null;
+            render();
+        }
+
+        // ============================================================
+        //  BIBLIOTHEK
+        // ============================================================
+        function renderBibliothek() {
+            const alle = ladeSpiele();
+            if (alle.length === 0) {
+                mainArea.innerHTML = `
+                    <div class="empty-state" style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+                        <p style="font-size:1.2rem; margin-bottom:0.5rem;">◈ Keine Spiele gespeichert</p>
+                        <p style="font-size:0.95rem;">Starte ein neues Spiel, um deine ersten Runden zu erfassen.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const sortiert = [...alle].sort((a, b) => new Date(b.datum) - new Date(a.datum));
+            let html = `<div class="bibliothek-list">`;
+            sortiert.forEach(s => {
+                html += `
+                    <div class="bibliothek-item" data-id="${s.id}">
+                        <div class="meta">
+                            <span class="titel">${s.titel || 'Unbenannt'}</span>
+                            <span class="datum">${formatDatum(s.datum)}</span>
+                            <span class="info">${s.spieler.length} Spieler · ${s.runden.length} Runden</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            mainArea.innerHTML = html;
+
+            document.querySelectorAll('.bibliothek-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const id = item.dataset.id;
+                    const spiel = alle.find(s => s.id === id);
+                    if (spiel) {
+                        anzeigeSpiel = spiel;
+                        render();
+                    }
+                });
+            });
+        }
+
+        // ============================================================
+        //  DETAILANSICHT (archiviert)
+        // ============================================================
+        function renderDetailAnsicht(spiel) {
+            if (!spiel) return;
+            let html = `
+                <div class="spiel-info">
+                    <span><span class="label">Titel</span><span class="value">${spiel.titel || 'Unbenannt'}</span></span>
+                    <span><span class="label">Datum</span><span class="value">${formatDatum(spiel.datum)}</span></span>
+                    <span><span class="label">Spieler</span><span class="value">${spiel.spieler.join(', ')}</span></span>
+                    <span><span class="label">Runden</span><span class="value">${spiel.runden.length}</span></span>
+                </div>
+            `;
+            html += renderTabelle(spiel);
+            mainArea.innerHTML = html;
+        }
+
+        // ============================================================
+        //  SETTINGS-UI
+        // ============================================================
+        function updateSettingsUI() {
+            document.querySelectorAll('#settingsPanel .toggle-row').forEach(row => {
+                const setting = row.dataset.setting;
+                const value = settings[setting] || 'off';
+                row.querySelectorAll('button').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.value === value);
+                    btn.onclick = () => {
+                        settings[setting] = btn.dataset.value;
+                        speichereSettings(settings);
+                        updateSettingsUI();
+                        render();
+                        if (setting === 'appName') {
+                            document.getElementById('appNameDisplay').textContent = settings.appName;
+                        }
+                    };
+                });
+            });
+            const nameInput = document.getElementById('appNameInput');
+            nameInput.value = settings.appName || 'Kartenspiel‑Bibliothek';
+            nameInput.onchange = () => {
+                settings.appName = nameInput.value.trim() || 'Kartenspiel‑Bibliothek';
+                speichereSettings(settings);
+                document.getElementById('appNameDisplay').textContent = settings.appName;
+                updateSettingsUI();
+                render();
+            };
+
+            document.getElementById('exportBtn').onclick = () => {
+                const data = {
+                    spiele: ladeSpiele(),
+                    spielerListe: ladeSpielerListe(),
+                    settings: ladeSettings()
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `kartenspiel_backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            document.getElementById('importBtn').onclick = () => {
+                document.getElementById('importFileInput').click();
+            };
+            document.getElementById('importFileInput').onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        if (data.spiele && data.spielerListe !== undefined && data.settings) {
+                            speichereSpiele(data.spiele);
+                            speichereSpielerListe(data.spielerListe);
+                            speichereSettings(data.settings);
+                            settings = ladeSettings();
+                            spielerListe = ladeSpielerListe();
+                            document.getElementById('appNameDisplay').textContent = settings.appName || 'Kartenspiel‑Bibliothek';
+                            render();
+                            alert('Import erfolgreich!');
+                        } else {
+                            alert('Ungültige Datei.');
+                        }
+                    } catch (err) {
+                        alert('Fehler beim Import: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = '';
+            };
+
+            document.getElementById('closeSettings').onclick = () => {
+                settingsPanel.classList.remove('open');
+            };
+        }
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        settingsPanel.classList.remove('open');
+        render();
+
+        console.log('♠ Kartenspiel-Bibliothek (Happy Monkey, erweiterte Version) geladen.');
+    </script>
+</body>
+</html>
